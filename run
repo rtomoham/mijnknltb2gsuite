@@ -1,4 +1,5 @@
 #!/bin/bash
 
 cd /mnt/Mijnknltb2GSuite
+php /mijnknltb2gsuite/CrontabManager.php
 php /mijnknltb2gsuite/refresh.php
