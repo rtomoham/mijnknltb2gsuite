@@ -1,6 +1,6 @@
 <?php
 
-define('PATH', '/mnt/Mijnklntb2GSuite/');
+define('PATH', '/mnt/Mijnknltb2GSuite/');
 define('FILENAME_INI', 'mijnknltb2gsuite.ini');
 
 define('MAX_MESSAGE_WIDTH', 76);
