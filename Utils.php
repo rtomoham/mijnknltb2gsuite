@@ -21,6 +21,12 @@ define('STRING_SHORT', 'short');
 define('STRING_FILENAMES', 'filenames');
 define('STRING_ACCOUNTS', 'accounts');
 define('STRING_SERVICE_ACCOUNT', 'service_account');
+define('STRING_CRON', 'cron');
+define('STRING_ON_MINUTE', 'onMinute');
+define('STRING_ON_HOUR', 'onHour');
+define('STRING_ON_DAY_OF_MONTH', 'onDayOfMonth');
+define('STRING_ON_MONTH', 'onMonth');
+define('STRING_ON_DAY_OF_WEEK', 'onDayOfWeek');
 
 function getHeaderString($header) {
   if (MAX_HEADER_TEXT < strlen($header)) {
