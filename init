@@ -3,3 +3,4 @@
 cd /mnt/Mijnknltb2GSuite
 echo $TZ > /etc/timezone
 php /mijnknltb2gsuite/updateCrontab.php
+/sbin/my_init
