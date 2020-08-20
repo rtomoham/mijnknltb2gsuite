@@ -157,7 +157,7 @@ class HtmlParser {
     //using str_replace.
     // And while I'm at it, remove a large string of spaces that shows up
     // in the LeagueName
-    return str_replace(array("\n", "\r", '             '), '', $htmlString);
+    return trim(str_replace(array("\n", "\r", '             '), '', $htmlString));
   }
 
   function setMatchDetails($htmlString, $match) {
@@ -167,39 +167,33 @@ class HtmlParser {
     $this->domDoc->loadHTML($htmlString);
     libxml_clear_errors();
 
-    // Let's process an alert, if any exists
     $divs = $this->domDoc->getElementsByTagName('div');
     foreach ($divs as $div) {
-      $class = $div->getAttribute("class");
+      $class = $div->getAttribute('class');
+      // Let's process an alert, if any exists
       if (0 == strcmp($class, 'alert__body-inner')) {
         $alert = trim($div->nodeValue);
         $match->setAlert($alert);
+      // Or the location
+      } elseif (0 == strcmp($class, 'h-card')) {
+        $location = $div->nodeValue;
+        $match->setLocation($this->cleanupString($location));
       }
     }
 
-    // Let's update the location and surface type
-    $isAddress = true;
-    $smalls = $this->domDoc->getElementsByTagName('small');
-    foreach ($smalls as $small) {
-      $class = $small->getAttribute("class");
-      if (0 == strcmp($class, 'media__subheading')) {
-        if ($isAddress) {
-          $location = $small->nodeValue;
-          $match->setLocation(trim($location));
-          $isAddress = false;
-        } else {
-          $surfaces = '';
-          $spans = $small->getElementsByTagName('span');
-          foreach ($spans as $span) {
-            $spanClass = $span->getAttribute('class');
-            // Check if strpos 'tag' is a boolean, since it returns FALSE
-            // if the haystack does not contain the needle, but 0 if
-            // it starts with the needle
-            if (!is_bool(strpos($spanClass, 'tag'))) {
-              $surfaces .= $span->nodeValue . ' ';
+    $spans = $this->domDoc->getElementsByTagName('span');
+    foreach ($spans as $span) {
+      $class = $span->getAttribute('class');
+      if (0 == strcmp($class, 'nav-link')) {
+        $svgs = $span->getElementsByTagName('svg');
+        if (!is_null($svgs)) {
+          foreach ($svgs as $svg) {
+            $class = $svg->getAttribute('class');
+            if (0 == strcmp($class, 'icon-court nav-link__prefix')) {
+              $match->setSurface($this->cleanupString($span->nodeValue));
+              break;
             }
           }
-          $match->setSurface(trim($surfaces));
         }
       }
     }
