@@ -431,7 +431,7 @@ class GoogleApiBroker {
     }
     $range = 'B1:AE6';
 
-    printBasicMessage($leagueMatch->getStartRFC3339());
+//    printBasicMessage($leagueMatch->getStartRFC3339());
 
     try {
       $body = new Google_Service_Sheets_ValueRange([ 'values' => $values]);
@@ -453,7 +453,7 @@ class GoogleApiBroker {
         $values[$row] = [];
       }
 
-      $players = $leagueMatch->getPlayers();
+//      $players = $leagueMatch->getPlayers();
       // initialize player names
       foreach ($players as $row=>$player) {
         $values[$row][0] = $player->toString();
