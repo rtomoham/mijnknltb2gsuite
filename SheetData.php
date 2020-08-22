@@ -1,7 +1,8 @@
 <?php
 class SheetData {
 
-  private $spreadsheetId;
+  private $fileId;
+
   private $data;
   private $playerNames = [];
   private $playerFirstNames = [];
@@ -11,12 +12,11 @@ class SheetData {
   private $drivers = [];
   private $snacks = [];
 
-  function __construct($sheetsService, $spreadsheetId) {
-    
-    $this->spreadsheetId = $spreadsheetId;
+  function __construct($sheetsService, $fileId) {
 
+    $this->fileId = $fileId;
     $range = 'A8:AE20';
-    $this->data = $sheetsService->spreadsheets_values->get($spreadsheetId, $range)->getValues();
+    $this->data = $sheetsService->spreadsheets_values->get($fileId, $range)->getValues();
 
 //    echo "SheetData: " . json_encode($this->data) . "\n";
     for ($i = 0; 10 > $i; $i++) {
@@ -91,9 +91,10 @@ class SheetData {
   function getSnacks($matchNr) {
     return $this->snacks[$matchNr];
   }
-  
-  function getSpreadsheetId() {
-    return $this->spreadsheetId;
+
+  function getFileId() {
+    return $this->fileId;
+  }
 
   function toString() {
     $string = 'PlayerNames: ';
