@@ -1,6 +1,7 @@
 <?php
 class SheetData {
 
+  private $spreadsheetId;
   private $data;
   private $playerNames = [];
   private $playerFirstNames = [];
@@ -11,6 +12,8 @@ class SheetData {
   private $snacks = [];
 
   function __construct($sheetsService, $spreadsheetId) {
+    
+    $this->spreadsheetId = $spreadsheetId;
 
     $range = 'A8:AE20';
     $this->data = $sheetsService->spreadsheets_values->get($spreadsheetId, $range)->getValues();
@@ -88,6 +91,9 @@ class SheetData {
   function getSnacks($matchNr) {
     return $this->snacks[$matchNr];
   }
+  
+  function getSpreadsheetId() {
+    return $this->spreadsheetId;
 
   function toString() {
     $string = 'PlayerNames: ';
