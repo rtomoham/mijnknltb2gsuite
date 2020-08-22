@@ -4,11 +4,11 @@ class Event {
   /*
   * An Event contains all the details needed to upload it to
   * Google. Our app will apply:
-  *   - a default duration of 6 hours;
+  *   - a default duration of 5 hours;
   *   - a single time zone, i.e. Europe/Amsterdam.
   */
   private const TIME_ZONE = 'Europe/Amsterdam';
-  private const DURATION = '6';
+  private const DURATION = '5';
   private const KEYWORD_DATETIME = 'dateTime';
   private const KEYWORD_TIMEZONE = 'timeZone';
   private $start;
@@ -30,7 +30,6 @@ class Event {
       $end->setTimestamp($start);
       $end->add(new DateInterval('PT' . self::DURATION . 'H'));
       $this->end = $end->getTimestamp();
-//      echo 'Start: ' . $this->start . "\tEnd:" . $this->end . "\n";
   }
 
   // Start Getters and Setters
