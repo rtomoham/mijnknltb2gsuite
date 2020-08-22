@@ -77,10 +77,8 @@ class GoogleApiBroker {
       // This is a league match, so let's add the link to the Google DRIVE
       // spreadsheet
 
-      $matchNr = $match->getMatchNumber();
-      $file = $this->getGoogleDocsFile($match);
-      $url = 'https://docs.google.com/spreadsheets/d/' . $file->getId();
-      $modified = strtotime($file->getModifiedTime());
+//      $league = new League($match->getLeagueId(), $match->getTeamId());
+//      $file = $this->getGoogleDocsFile($league);
 
       $sheetData = $match->getSheetData();
       if (is_null($sheetData)) {
@@ -89,6 +87,12 @@ class GoogleApiBroker {
         $match->setSheetData($sheetData);
       }
 
+      $fileId = $sheetData->getFileId();
+      $url = 'https://docs.google.com/spreadsheets/d/' . $fileId;
+      $file = $this->driveService->files->get($fileId);
+      $modified = strtotime($file->getModifiedTime());
+
+      $matchNr = $match->getMatchNumber();
       $matchDetails = $this->getMatchDetails($sheetData, $matchNr);
 
       if (!is_null($url)) {
@@ -116,17 +120,22 @@ class GoogleApiBroker {
     $event = $this->calendarService->events->insert($googleCalendarId, $event);
   }
 
+/**
+Deprecated
+
   function addSheetData($leagueMatch) {
-    $matchNr = $leagueMatch->getMatchNumber();
-    $file = $this->getGoogleDocsFile($leagueMatch);
+//    $matchNr = $leagueMatch->getMatchNumber();
+    $league = new League($leagueMatch->getLeagueId(), $leagueMatch->getTeamId());
+    $file = $this->getGoogleDocsFile($league);
     $url = 'https://docs.google.com/spreadsheets/d/' . $file->getId();
 
-    $sheetData = $match->getSheetData();
+    $sheetData = $leagueMatch->getSheetData();
     if (is_null($sheetData)) {
       $sheetData = new SheetData($this->sheetsService, $file->getId());
-      $match->setSheetData($sheetData);
+      $leagueMatch->setSheetData($sheetData);
     }
   }
+*/
 
   function getSheetData($league) {
     $file = $this->getGoogleDocsFile($league);
@@ -233,8 +242,8 @@ class GoogleApiBroker {
 
   function getGoogleDocsFile($league) {
     $filename = self::STRING_GOOGLE_SHEETS_ID_PREFIX .
-    $league->getLeagueId() . '.' .
-    $league->getTeamId();
+      $league->getLeagueId() . '.' .
+      $league->getTeamId();
 
     // Let's specify the fields we want to receive
     $optParams = array(
