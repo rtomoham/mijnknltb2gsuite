@@ -39,7 +39,7 @@ class Match extends Event {
     $end = new DateTime('@' . $this->end);
     $MY_DTZ = new DateTimeZone(MY_TIMEZONE);
     $end->setTimezone($MY_DTZ);
-    $endTime = $end->format('h:i');
+    $endTime = $end->format('H:i');
     $sixAM = strtotime('6:00');
     if (strtotime($endTime) < $sixAM) {
       $end->setTime(0, 0);
