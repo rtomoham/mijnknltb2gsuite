@@ -32,6 +32,19 @@ class Match extends Event {
     $this->additionalId = $additionalId;
     $this->home = $home;
     $this->away = $away;
+
+    // check the end time: if the match ends earlier than 6 AM, it has extended
+    // beyond the starting day, so we want to shorten it midnight to keep our
+    // calendars clean
+    $end = new DateTime('@' . $this->end);
+    $MY_DTZ = new DateTimeZone(MY_TIMEZONE);
+    $end->setTimezone($MY_DTZ);
+    $endTime = $end->format('h:i');
+    $sixAM = strtotime('6:00');
+    if (strtotime($endTime) < $sixAM) {
+      $end->setTime(0, 0);
+      $this->end = $end->getTimestamp();
+    }
   }
 
   function getAdditionalId() {
