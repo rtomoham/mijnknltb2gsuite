@@ -1,7 +1,6 @@
 <?php
 
-//define('PATH', '/mnt/Mijnknltb2GSuite/');
-define('PATH', '/home/robert/code/mijnknltb2gsuite-wip-data/');
+define('PATH', '/mnt/Mijnknltb2GSuite/');
 define('FILENAME_INI', 'mijnknltb2gsuite.ini');
 
 define('MY_TIMEZONE', 'Europe/Amsterdam');
