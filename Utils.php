@@ -1,7 +1,10 @@
 <?php
 
-define('PATH', '/mnt/Mijnknltb2GSuite/');
+//define('PATH', '/mnt/Mijnknltb2GSuite/');
+define('PATH', '/home/robert/code/mijnknltb2gsuite-wip-data/');
 define('FILENAME_INI', 'mijnknltb2gsuite.ini');
+
+define('MY_TIMEZONE', 'Europe/Amsterdam');
 
 define('MAX_MESSAGE_WIDTH', 76);
 define('MAX_WIDTH', 80);
