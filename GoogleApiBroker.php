@@ -117,23 +117,6 @@ class GoogleApiBroker {
     $event = $this->calendarService->events->insert($googleCalendarId, $event);
   }
 
-/**
-Deprecated
-
-  function addSheetData($leagueMatch) {
-//    $matchNr = $leagueMatch->getMatchNumber();
-    $league = new League($leagueMatch->getLeagueId(), $leagueMatch->getTeamId());
-    $file = $this->getGoogleDocsFile($league);
-    $url = 'https://docs.google.com/spreadsheets/d/' . $file->getId();
-
-    $sheetData = $leagueMatch->getSheetData();
-    if (is_null($sheetData)) {
-      $sheetData = new SheetData($this->sheetsService, $file->getId());
-      $leagueMatch->setSheetData($sheetData);
-    }
-  }
-*/
-
   function getSheetData($league) {
     $filename = self::STRING_GOOGLE_SHEETS_ID_PREFIX .
       $league->getLeagueId() . '.' .
@@ -170,7 +153,7 @@ Deprecated
         $creator->getId())
       ) {
         printBasicMessage('DEL: "' .
-        $event->getSummary() . '" from Google Calendar');
+        $event->getSummary() . '" from GCal');
         $this->calendarService->events->delete(
           $googleCalendarId, $event->getId()
         );
@@ -428,8 +411,6 @@ Deprecated
     }
     $range = 'B1:AE6';
 
-//    printBasicMessage($leagueMatch->getStartRFC3339());
-
     try {
       $body = new Google_Service_Sheets_ValueRange([ 'values' => $values]);
       $result = $this->sheetsService->spreadsheets_values->update(
@@ -571,8 +552,6 @@ Deprecated
           $params
         );
       }
-
-      //            return 'https://docs.google.com/spreadsheets/d/' . $newFile->getId();
     } catch (Exception $e) {
       printMessage($e);
     }
