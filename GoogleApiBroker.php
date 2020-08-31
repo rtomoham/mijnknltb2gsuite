@@ -226,7 +226,7 @@ Deprecated
         printMessage('No files found.');
       } else {
         foreach ($this->files as $fileName => $fileId) {
-          printBasicMessage("Deleting:\t" . $fileName);
+          printBasicMessage("DEL:\t" . $fileName);
           $this->driveService->files->delete($fileId);
         }
       }
@@ -267,12 +267,6 @@ Deprecated
         $pageToken = NULL;
       }
     } while ($pageToken);
-
-/*
-    // The file does not exist, so we will create it (copy the template)
-    printBasicMessage("Creating file: $filename");
-    return $this->copyTemplate($league, $filename);
-*/
   }
 
   function getMatchDetails($sheetData, $matchNr) {
