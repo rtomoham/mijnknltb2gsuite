@@ -2,5 +2,5 @@
 
 cd /mnt/mijnknltb2gsuite
 echo $TZ > /etc/timezone
-php /mijnknltb2gsuite/updateCrontab.php
+php /etc/mijnknltb2gsuite/updateCrontab.php
 /sbin/my_init
