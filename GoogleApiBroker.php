@@ -169,7 +169,7 @@ Deprecated
         $this->calendarService->getClient()->getClientId(),
         $creator->getId())
       ) {
-        printBasicMessage('Deleting "' .
+        printBasicMessage('DEL: "' .
         $event->getSummary() . '" from Google Calendar');
         $this->calendarService->events->delete(
           $googleCalendarId, $event->getId()
