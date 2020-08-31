@@ -112,7 +112,7 @@ class GoogleApiBroker {
     );
 
     printBasicMessage('ADD MATCH: ' . $match->getStartHuman() .
-    ' with title "' . $match->getBasicSummary() . '" to Google Calendar.');
+    ' with title "' . $match->getBasicSummary() . '" to GCal.');
     $event = new Google_Service_Calendar_Event($matchArray);
     $event = $this->calendarService->events->insert($googleCalendarId, $event);
   }
