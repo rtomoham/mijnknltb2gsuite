@@ -27,8 +27,9 @@ class GoogleApiBroker {
   private $sheetsService;
   private $driveService;
 
-  // Google Drive files
-  private $files;
+  // Google Drive files in array [ filename => fileID]
+  private $files = [];
+  private $templateFileId;
 
   private function __construct() {
     $this->processIniFile();
@@ -49,6 +50,8 @@ class GoogleApiBroker {
     $this->calendarService = new Google_Service_Calendar($client);
     $this->sheetsService = new Google_Service_Sheets($client);
     $this->driveService = new Google_Service_Drive($client);
+    
+    $this->retrieveAllFiles($this->driveService);
   }
 
   public static function getInstance() {
@@ -81,12 +84,6 @@ class GoogleApiBroker {
 //      $file = $this->getGoogleDocsFile($league);
 
       $sheetData = $match->getSheetData();
-      if (is_null($sheetData)) {
-        printBasicMessage('GoogleApiBroker::addEvent::NULL==$sheetData THIS SHOULD NEVER HAPPEN');
-        $sheetData = new SheetData($this->sheetsService, $file->getId());
-        $match->setSheetData($sheetData);
-      }
-
       $fileId = $sheetData->getFileId();
       $url = 'https://docs.google.com/spreadsheets/d/' . $fileId;
       $file = $this->driveService->files->get($fileId);
@@ -114,7 +111,7 @@ class GoogleApiBroker {
       'end' => $match->getEnd(),
     );
 
-    printBasicMessage('Adding match starting ' . $match->getStartHuman() .
+    printBasicMessage('ADD MATCH: ' . $match->getStartHuman() .
     ' with title "' . $match->getBasicSummary() . '" to Google Calendar.');
     $event = new Google_Service_Calendar_Event($matchArray);
     $event = $this->calendarService->events->insert($googleCalendarId, $event);
@@ -138,8 +135,15 @@ Deprecated
 */
 
   function getSheetData($league) {
-    $file = $this->getGoogleDocsFile($league);
-    return new SheetData($this->sheetsService, $file->getId());
+    $filename = self::STRING_GOOGLE_SHEETS_ID_PREFIX .
+      $league->getLeagueId() . '.' .
+      $league->getTeamId();
+
+    if (!array_key_exists($filename, $this->files)) {
+      $newFile = $this->copyTemplate($league, $filename);
+      $this->files[$filename] = $newFile->getId();
+    }
+    return new SheetData($this->sheetsService, $this->files[$filename]);
   }
 
   function clearEvents($googleCalendarAccount) {
@@ -202,13 +206,9 @@ Deprecated
 
   function deleteFiles($fileIds = NULL) {
     if (is_null($this->files)) {
-      $optParams = array(
-        'pageSize' => 10,
-        'fields' => 'nextPageToken, files(id, name)'
-      );
-      $this->files = $this->driveService->files->listFiles($optParams)->getFiles();
+      retrieveAllFiles($this->driveService);
     }
-
+    
     if (!is_null($fileIds)) {
       foreach ($fileIds as $fileId) {
         try {
@@ -225,56 +225,54 @@ Deprecated
       if (count($this->files) == 0) {
         printMessage('No files found.');
       } else {
-        foreach ($files as $file) {
-          $pos = strpos($file->getName(), self::STRING_GOOGLE_SHEETS_ID_PREFIX);
-          printBasicMessage("Found:\t" . $file->getName());
-
-          if (false !== $pos) {
-            if (0 == $pos) {
-              printBasicMessage("Deleting:\t" . $file->getName());
-              $this->driveService->files->delete($file->getId());
-            }
-          }
+        foreach ($this->files as $fileName => $fileId) {
+          printBasicMessage("Deleting:\t" . $fileName);
+          $this->driveService->files->delete($fileId);
         }
       }
     }
   }
 
-  function getGoogleDocsFile($league) {
-    $filename = self::STRING_GOOGLE_SHEETS_ID_PREFIX .
-      $league->getLeagueId() . '.' .
-      $league->getTeamId();
+  function retrieveAllFiles($driveService) {
+    $pageToken = NULL;
 
     // Let's specify the fields we want to receive
     $optParams = array(
       'pageSize' => 10,
       'fields' => 'nextPageToken, files(id, name, modifiedTime)'
     );
-    if (is_null($this->files)) {
-      $this->files = $this->driveService->files->listFiles($optParams)->getFiles();
-    }
 
-    if (0 == count($this->files)) {
-      printMessage('No files found.');
-    } else {
-      //      printMessage('Files:');
-      foreach ($this->files as $file) {
-        $pos = strpos($file->getName(), self::STRING_GOOGLE_SHEETS_ID_PREFIX);
-        if (false !== $pos) {
-          if (0 == $pos) {
-            //            var_dump($file->getName(), $filename);
-            if (0 == strcmp($file->getName(), $filename)) {
-              printBasicMessage("Found file: $filename modified on " . date(DateTimeInterface::RFC3339, strtotime($file->getModifiedTime())));
-              return $file;
-              //              return 'https://docs.google.com/spreadsheets/d/' . $file->getId();
+    do {
+      try {
+        if ($pageToken) {
+          $optParams['pageToken'] = $pageToken;
+        }
+        $filesList = $driveService->files->listFiles($optParams);
+        $files = $filesList->getFiles();
+        
+        foreach ($files as $file) {
+          $pos = strpos($file->getName(), self::STRING_GOOGLE_SHEETS_ID_PREFIX);
+          if (false !== $pos) {
+            if (0 == $pos) {
+              $this->files[$file->getName()] = $file->getId();
+            } elseif (0 == strcmp(self::TEMPLATE-complete-team-schedule, $file->getName())) {
+              $this->templateFileId = $file->getId();
             }
           }
         }
+        
+        $pageToken = $filesList->getNextPageToken();
+      } catch (Exception $e) {
+        printBasicMessage($e->getMessage());
+        $pageToken = NULL;
       }
-    }
+    } while ($pageToken);
+
+/*
     // The file does not exist, so we will create it (copy the template)
     printBasicMessage("Creating file: $filename");
     return $this->copyTemplate($league, $filename);
+*/
   }
 
   function getMatchDetails($sheetData, $matchNr) {
@@ -390,28 +388,24 @@ Deprecated
     return $selectedTeamString . "\n";
   }
 
+
+  /**
+  * Pre: $this->templateFileId != NULL
+  */
   function copyTemplate($league, $filename) {
-    if (0 == count($this->files)) {
-      printMessage('No files found.');
-    } else {
-      foreach ($this->files as $file) {
-        if (0 == strcmp($file->getName(), self::FILENAME_TEMPLATE)) {
-          printBasicMessage('Creating new sheet from template');
-          //          $newFile = $this->driveService->files->copy($file->getId());
-          $newFile = new Google_Service_Drive_DriveFile();
-          $newFile->setName($filename);
-          $newFile = $this->driveService->files->copy($file->getId(), $newFile);
+    printBasicMessage('Creating new sheet from template');
+    //          $newFile = $this->driveService->files->copy($file->getId());
+    $newFile = new Google_Service_Drive_DriveFile();
+    $newFile->setName($filename);
+    $newFile = $this->driveService->files->copy($file->getId(), $newFile);
 
-          $this->initializeSheet($newFile, $league);
+    $this->initializeSheet($newFile, $league);
 
-          $this->makeWorldWritable($newFile);
+    $this->makeWorldWritable($newFile);
 
-          //          $this->transferOwnership($newFile);
-          return $newFile;
-          //          return 'https://docs.google.com/spreadsheets/d/' . $newFile->getId();
-        }
-      }
-    }
+    //          $this->transferOwnership($newFile);
+    return $newFile;
+    //          return 'https://docs.google.com/spreadsheets/d/' . $newFile->getId();
   }
 
   function initializeSheet($file, $league) {
@@ -528,69 +522,68 @@ Deprecated
         $printMessage($results);
       }
 
-      function writeMatchHeader($file, $leagueMatch) {
-        BackoffTimer::getInstance()->sleep('GoogleApiBroker::writeMatchHeader');
+  function writeMatchHeader($file, $leagueMatch) {
+    BackoffTimer::getInstance()->sleep('GoogleApiBroker::writeMatchHeader');
 
-        try {
-          $params = [ 'valueInputOption' => 'RAW'];
-          $values = [[$leagueMatch->getStartHuman()], [$leagueMatch->getHome()], ['vs'] ,[$leagueMatch->getAway()]];
-          $column = self::GOOGLE_SHEET_COLUMNS_HEADERS[$leagueMatch->getMatchNumber()];
-          $range =  $column . '3:' . $column . '6';
-          printBasicMessage($leagueMatch->getStartRFC3339());
-          $body = new Google_Service_Sheets_ValueRange([ 'values' => $values]);
-          $result = $this->sheetsService->spreadsheets_values->update(
-            $file->getId(),
-            [$range],
-            $body,
-            $params
-          );
+    try {
+      $params = [ 'valueInputOption' => 'RAW'];
+      $values = [[$leagueMatch->getStartHuman()], [$leagueMatch->getHome()], ['vs'] ,[$leagueMatch->getAway()]];
+      $column = self::GOOGLE_SHEET_COLUMNS_HEADERS[$leagueMatch->getMatchNumber()];
+      $range =  $column . '3:' . $column . '6';
+      printBasicMessage($leagueMatch->getStartRFC3339());
+      $body = new Google_Service_Sheets_ValueRange([ 'values' => $values]);
+      $result = $this->sheetsService->spreadsheets_values->update(
+        $file->getId(),
+        [$range],
+        $body,
+        $params
+      );
 
-        } catch (Exception $e) {
-          printMessage($e);
-        }
-      }
-
-      function writePlayerNames($file, $leagueMatch) {
-        $players = $leagueMatch->getPlayers();
-
-        try {
-          $params = [ 'valueInputOption' => 'RAW'];
-
-          $name = [[$leagueMatch->getLeagueName()]];
-          $range = [ 'B1'];
-          $body = new Google_Service_Sheets_ValueRange([ 'values' => $name]);
-          $result = $this->sheetsService->spreadsheets_values->update(
-            $file->getId(),
-            $range,
-            $body,
-            $params
-          );
-
-          if (0 < count($players)) {
-            $names = [];
-            foreach ($players as $key=>$player) {
-              // push the player's name into the array as a single entry array
-              $names[] = [$player->toString()];
-            }
-            $lastRow = count($players) + 8;
-            $rangeString = 'A8:A' . $lastRow ;
-            $range = [ "A8:A$lastRow" ];
-            $body = new Google_Service_Sheets_ValueRange([ 'values' => $names]);
-            $result = $this->sheetsService->spreadsheets_values->update(
-              $file->getId(),
-              $range,
-              $body,
-              $params
-            );
-          }
-
-          //            return 'https://docs.google.com/spreadsheets/d/' . $newFile->getId();
-        } catch (Exception $e) {
-          printMessage($e);
-        }
-      }
-
-
+    } catch (Exception $e) {
+      printMessage($e);
     }
+  }
 
-    ?>
+  function writePlayerNames($file, $leagueMatch) {
+    $players = $leagueMatch->getPlayers();
+
+    try {
+      $params = [ 'valueInputOption' => 'RAW'];
+
+      $name = [[$leagueMatch->getLeagueName()]];
+      $range = [ 'B1'];
+      $body = new Google_Service_Sheets_ValueRange([ 'values' => $name]);
+      $result = $this->sheetsService->spreadsheets_values->update(
+        $file->getId(),
+        $range,
+        $body,
+        $params
+      );
+
+      if (0 < count($players)) {
+        $names = [];
+        foreach ($players as $key=>$player) {
+          // push the player's name into the array as a single entry array
+          $names[] = [$player->toString()];
+        }
+        $lastRow = count($players) + 8;
+        $rangeString = 'A8:A' . $lastRow ;
+        $range = [ "A8:A$lastRow" ];
+        $body = new Google_Service_Sheets_ValueRange([ 'values' => $names]);
+        $result = $this->sheetsService->spreadsheets_values->update(
+          $file->getId(),
+          $range,
+          $body,
+          $params
+        );
+      }
+
+      //            return 'https://docs.google.com/spreadsheets/d/' . $newFile->getId();
+    } catch (Exception $e) {
+      printMessage($e);
+    }
+  }
+
+}
+
+?>
