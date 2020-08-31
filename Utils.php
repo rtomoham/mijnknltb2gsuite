@@ -1,6 +1,6 @@
 <?php
 
-define('PATH', '/mnt/Mijnknltb2GSuite/');
+define('PATH', '/mnt/mijnknltb2gsuite/');
 define('FILENAME_INI', 'mijnknltb2gsuite.ini');
 
 define('MY_TIMEZONE', 'Europe/Amsterdam');
