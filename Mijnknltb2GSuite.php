@@ -62,7 +62,14 @@ class Mijnknltb2GSuite {
   function refreshGoogleCalendar() {
     $delete = false;
     if ($delete) {
-      $this->googleApiBroker->deleteFiles(['1OFSDJGFoe1v_DiH-BiskwxmJPnmd62NoyZpAqbcjsHc']);
+      $this->googleApiBroker->deleteFiles([
+        '1snKfnfLYP040TITWxnTOva-EsTNsDOVRFi_I0L-Ow4w', '11ZOQNE1yuLXOat0vK59od9dtwAfr0jWuzZC8bGDJyi8',
+        '11-iL-FByJE5NtivQhxnuJXrXAfM3qKYwz_WysL4AIEg',
+        '1y4I180hk2nsue5x8q4uBVoYpB5t5HdjgH3HilEj26io', '1fYvwakrW1MsQTQLwFht2K6CsVXK73B-ejMieFNMmyJA',
+        '1b08Q5L3D4C-pUswDUGEFN8PL-Zf9nYNz62Zbuwb8Ftg', '1cmg8RoQGTRM7N24TvMI0i-lSyoA6H-pNhOZ_tXVWrqE',
+        '1ZOaZ1_tksXz4ehpB6B_f0XaAmZKlB60TiK-ngP7UkXI',
+        '1lj0MceaKvXswAVLuKvIuNAhdyR6sOwrzla11_jaZaw4', '1jiQDF9ed2avAu-gDGv80vXwWa505i08ncwgi-1bErFs'
+      ]);
     } else {
       $this->clearGoogleCalendar();
 
@@ -89,7 +96,7 @@ class Mijnknltb2GSuite {
               $sheetData = $this->googleApiBroker->getSheetData($league);
             }
             $match->setSheetData($sheetData);
-            BackoffTimer::getInstance()->sleep('Mijnknltb2GSuite::refreshGoogleCalendar');
+//            BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar');
           }
         }
         $allMatches = array_merge($allMatches, $matches);
@@ -98,7 +105,7 @@ class Mijnknltb2GSuite {
       printMessage('Adding ' . sizeof($allMatches) . ' matches to Google Calendar');
       foreach ($allMatches as $match) {
         $this->googleApiBroker->addEvent($match, $this->googleCalendarAccount);
-        BackoffTimer::getInstance()->sleep('Mijnknltb2GSuite::refreshGoogleCalendar::addEvent');
+        BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');
       }
     }
   }
