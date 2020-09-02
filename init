@@ -1,6 +1,7 @@
 #!/bin/bash
+# init file for https://github.com/phusion/baseimage-docker
 
-cd /mnt/mijnknltb2gsuite
 echo $TZ > /etc/timezone
+cd /mnt/mijnknltb2gsuite
 php /etc/mijnknltb2gsuite/updateCrontab.php
 /sbin/my_init
