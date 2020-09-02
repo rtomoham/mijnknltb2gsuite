@@ -27,7 +27,7 @@ class GoogleApiBroker {
   private $sheetsService;
   private $driveService;
 
-  // Google Drive files in array [ filename => fileID]
+  // Google Drive files in array [ filename => fileID ]
   private $files = [];
   private $templateFileId;
 
@@ -50,7 +50,7 @@ class GoogleApiBroker {
     $this->calendarService = new Google_Service_Calendar($client);
     $this->sheetsService = new Google_Service_Sheets($client);
     $this->driveService = new Google_Service_Drive($client);
-    
+
     $this->retrieveAllFiles($this->driveService);
   }
 
@@ -191,7 +191,7 @@ class GoogleApiBroker {
     if (is_null($this->files)) {
       retrieveAllFiles($this->driveService);
     }
-    
+
     if (!is_null($fileIds)) {
       foreach ($fileIds as $fileId) {
         try {
@@ -232,7 +232,7 @@ class GoogleApiBroker {
         }
         $filesList = $driveService->files->listFiles($optParams);
         $files = $filesList->getFiles();
-        
+
         foreach ($files as $file) {
           $pos = strpos($file->getName(), self::STRING_GOOGLE_SHEETS_ID_PREFIX);
           if (false !== $pos) {
@@ -243,7 +243,7 @@ class GoogleApiBroker {
             }
           }
         }
-        
+
         $pageToken = $filesList->getNextPageToken();
       } catch (Exception $e) {
         printBasicMessage($e->getMessage());
