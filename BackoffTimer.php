@@ -7,8 +7,10 @@ class BackoffTimer {
 
   private static $instance = NULL;
 
-  private $backoff_time_long;
-  private $backoff_time_short;
+  private $long;
+  private $short;
+
+  private $max;
 
   private function __construct() {
   }
@@ -18,16 +20,36 @@ class BackoffTimer {
     return self::$instance;
   }
 
-  function init($short, $long) {
-    $this->backoff_time_short = $short;
-    $this->backoff_time_long = $long;
+  function increaseShort() {
+    $this->short = 2 * $this->short;
+    if ($this->short > $this->max) {
+      $this->short = $this->max;
+    }
   }
 
-  function sleep($message, $long = false) {
-    if ($long) {
-      $sleep = $this->backoff_time_long;
+  /*
+  * PRE:  TRUE
+  * POST: $this->short has been initialized (min value: 1)
+  *       $this->long has been initialized (min value: 60)
+  *       $this->max has been initialized (== $this->long)
+  */
+  function init($short, $long) {
+    if (1 > $short) {
+      $short = 1;
+    }
+    if (60 > $long) {
+      $long = 60;
+    }
+    $this->short = $short;
+    $this->long = $long;
+    $this->max = $long;
+  }
+
+  function sleep($message, $isLong = false) {
+    if ($isLong) {
+      $sleep = $this->long;
     } else {
-      $sleep = $this->backoff_time_short;
+      $sleep = $this->short;
     }
     printBasicMessage('==> Sleeping (' . $message . ') ' . $sleep . ' second(s) <==');
     sleep($sleep);

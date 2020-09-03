@@ -1,5 +1,6 @@
 <?php
-include('Event.php');
+require_once('Event.php');
+require_once('Mijnknltb2GSuiteSettings.php');
 
 class Match extends Event {
   private const STRING_SURFACE = "\nOndergrond: ";
@@ -21,13 +22,15 @@ class Match extends Event {
 
   private $sheetData;
 
-  function __construct($matchId, $summary, $description, $additionalId, $start, $home, $away) {
-    /*
-    * Overrides and overloads the parent constructor, by taking $matchId and
-    * an additional ID ($leagueId or tournamentId) to identify the exact
-    * match. $description, $url and $location will be derived from
-    * $matchId and $additionalId
-    */
+  /*
+  * Overrides and overloads the parent constructor, by taking $matchId and
+  * an additional ID ($leagueId or tournamentId) to identify the exact
+  * match. $description, $url and $location will be derived from
+  * $matchId and $additionalId
+  */
+  function __construct(
+    $matchId, $summary, $description, $additionalId, $start, $home, $away) {
+
     parent::__construct($matchId, $summary, NULL, NULL, $start);
     $this->additionalId = $additionalId;
     $this->home = $home;
@@ -37,8 +40,8 @@ class Match extends Event {
     // beyond the starting day, so we want to shorten it midnight to keep our
     // calendars clean
     $end = new DateTime('@' . $this->end);
-    $MY_DTZ = new DateTimeZone(MY_TIMEZONE);
-    $end->setTimezone($MY_DTZ);
+    $end->setTimezone(
+      Mijnknltb2GSuiteSettings::getInstance()->getMyDateTimeZone());
     $endTime = $end->format('H:i');
     $sixAM = strtotime('6:00');
     if (strtotime($endTime) < $sixAM) {

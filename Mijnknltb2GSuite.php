@@ -4,6 +4,7 @@ include('MijnknltbWebBroker.php');
 include('GoogleApiBroker.php');
 include_once('League.php');
 include_once('BackoffTimer.php');
+require_once('Mijnknltb2GSuiteSettings.php');
 
 class Mijnknltb2GSuite {
   // MijnknltbGoogleCalendar contains all the information needed
@@ -14,6 +15,7 @@ class Mijnknltb2GSuite {
   private $googleApiBroker;
   private $googleCalendarAccount;
   private $mijnknltbWebBroker;
+  private $mk2gsSettings;
 
   // $leaguesOnly == true => only import league matches
   private $leaguesOnly = false;
@@ -21,6 +23,7 @@ class Mijnknltb2GSuite {
   private $leaguesFilters = NULL;
 
   function __construct($googleCalendarAccount, $mijnknltbUser) {
+    $this->mk2gsSettings = Mijnknltb2GSuiteSettings::getInstance();
     $this->googleCalendarAccount = $googleCalendarAccount;
     $this->mijnknltbWebBroker = new MijnknltbWebBroker($mijnknltbUser);
     $this->googleApiBroker = GoogleApiBroker::getInstance();
@@ -48,10 +51,15 @@ class Mijnknltb2GSuite {
     $this->googleApiBroker->getAllEvents($this->googleCalendarAccount);
   }
 
-  function getMatches() {
+  function getMatches($leagueId, $teamId, $leaguesFilters) {
+    printMessage(
+      'KNLTB GET: [' .
+      $this->googleCalendarAccount->getDescription() .
+      ']' );
     return $this->mijnknltbWebBroker->getMatches(
-      $this->googleCalendarAccount->getMijnknltbProfileIds(),
-      $this->leaguesFilters
+      $leagueId,
+      $teamId,
+      $leaguesFilters
     );
   }
 
@@ -71,6 +79,11 @@ class Mijnknltb2GSuite {
         '1lj0MceaKvXswAVLuKvIuNAhdyR6sOwrzla11_jaZaw4', '1jiQDF9ed2avAu-gDGv80vXwWa505i08ncwgi-1bErFs'
       ]);
     } else {
+      printMessage(
+        'GCAL DEL: [' .
+        $this->googleCalendarAccount->getDescription() .
+        ']'
+      );
       $this->clearGoogleCalendar();
 
       $leaguesAndTeams = $this->mijnknltbWebBroker->getLeaguesAndTeams(
@@ -83,7 +96,7 @@ class Mijnknltb2GSuite {
         $teamId = $leagueAndTeam[1];
         $league = new League($leagueId, $teamId);
 
-        $matches = $this->mijnknltbWebBroker->getMatches(
+        $matches = $this->getMatches(
           $leagueId,
           $teamId,
           $this->leaguesFilters
@@ -94,15 +107,18 @@ class Mijnknltb2GSuite {
           if ($match->isLeagueMatch()) {
             if (0 == $matchNr) {
               $sheetData = $this->googleApiBroker->getSheetData($league);
+              BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');
             }
             $match->setSheetData($sheetData);
-//            BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar');
           }
         }
         $allMatches = array_merge($allMatches, $matches);
       }
 
-      printMessage('Adding ' . sizeof($allMatches) . ' matches to Google Calendar');
+      printMessage(
+        'GCAL ADD: ' . sizeof($allMatches) . ' matches [' .
+        $this->googleCalendarAccount->getDescription() . ']'
+      );
       foreach ($allMatches as $match) {
         $this->googleApiBroker->addEvent($match, $this->googleCalendarAccount);
         BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');

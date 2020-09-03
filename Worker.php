@@ -1,13 +1,12 @@
 <?php
-include('GoogleCalendarAccount.php');
-include('Mijnknltb2GSuite.php');
-include('MijnknltbUser.php');
-include_once('BackoffTimer.php');
+require_once('GoogleCalendarAccount.php');
+require_once('Mijnknltb2GSuite.php');
+require_once('MijnknltbUser.php');
+require_once('BackoffTimer.php');
+require_once('Mijnknltb2GSuiteSettings.php');
 
 class Worker {
-//  private const FILENAME_ACCOUNTS = PATH . 'accounts.json';
   private const KEYWORD_DESCRIPTION = 'description';
-  private const KEYWORD_GCAL_ACCOUNTS = 'google_calendar_accounts';
   private const KEYWORD_GCAL_ID = 'google_calendar_id';
   private const KEYWORD_USERNAME = 'username';
   private const KEYWORD_PASSWORD = 'password';
@@ -15,17 +14,22 @@ class Worker {
   private const KEYWORD_LAST_UPDATE = 'last_update';
   private const KEYWORD_LEAGUES_ONLY = 'only_leagues';
   private const KEYWORD_LEAGUES_FILTER = 'leagues_filter';
-  private const KEYWORD_MIJNKNLTB_ACCOUNT = 'mijnknltb_account';
   private const KEYWORD_MIJNKNLTB_PROFILE_ID = 'mijnknltb_profile_id';
+
+  private $mk2gsSettings;
 
   private $mijnknltbUser;
   private $googleCalendarAccounts = array();
   private $backoffTimer;
-  private $filenameAccounts;
 
-  function __construct() {
+  function __construct($test = false) {
+    $this->mk2gsSettings = Mijnknltb2GSuiteSettings::getInstance($test);
+    $this->mk2gsSettings->init('mijnknltb2gsuite');
+
     $this->backoffTimer = BackoffTimer::getInstance();
-    $this->processIniFile();
+    $delays = $this->mk2gsSettings->getDelays();
+    $this->backoffTimer->init($delays[0], $delays[1]);
+
     $this->processAccountsFile();
   }
 
@@ -50,21 +54,17 @@ class Worker {
   }
 
   function processAccountsFile() {
-    $string = file_get_contents(PATH . $this->filenameAccounts);
-    $obj = json_decode($string);
+    foreach ($this->mk2gsSettings->getGoogleSuiteAccounts() as $account) {
+      $this->processGoogleCalendarAccounts($account); break;
+    }
 
-    // Loop through the object
-    foreach ($obj as $key=>$value) {
-      switch ($key) {
-        case self::KEYWORD_GCAL_ACCOUNTS:
-        $this->processGoogleCalendarAccounts($value); break;
-        case self::KEYWORD_MIJNKNLTB_ACCOUNT:
-        $this->processMijnknltbAccount($value); break;
-      }
+    foreach ($this->mk2gsSettings->getMijnknltbAccounts() as $account) {
+      $this->processMijnknltbAccount($account); break;
     }
   }
 
   function processGoogleCalendarAccounts($googleCalendarAccounts) {
+//    var_dump($googleCalendarAccounts);
     foreach ($googleCalendarAccounts as $googleCalendarAccount) {
       $active = false;
       $leaguesFilters = NULL;
@@ -96,9 +96,9 @@ class Worker {
       if ($active) {
         $account = new GoogleCalendarAccount(
           $googleCalendarId,
-          $mijnknltbProfileIds
+          $mijnknltbProfileIds,
+          $description
         );
-        $account->setDescription($description);
         if (!is_null($leaguesFilters)) {
           $account->setLeaguesFilter($leaguesFilters);
         }
@@ -109,20 +109,9 @@ class Worker {
     }
   }
 
-  function processIniFile() {
-    $settings = getSettings();
-    $delays = $settings[STRING_BACKOFF_TIMERS];
-
-    $long = $delays[STRING_LONG];
-    $short = $delays[STRING_SHORT];
-    $this->backoffTimer->init($short, $long);
-
-    $filenames = $settings[STRING_FILENAMES];
-    $this->filenameAccounts = $filenames[STRING_ACCOUNTS];
-  }
-
-  function processMijnknltbAccount($mijnknltbAccountLine) {
-    foreach ($mijnknltbAccountLine as $key=>$value) {
+  function processMijnknltbAccount($mijnknltbAccounts) {
+//    var_dump($mijnknltbAccounts);
+    foreach ($mijnknltbAccounts as $key=>$value) {
       switch ($key) {
         case self::KEYWORD_USERNAME: $username = $value; break;
         case self::KEYWORD_PASSWORD: $password = $value; break;
@@ -132,6 +121,7 @@ class Worker {
   }
 
   function refreshGoogleCalendars() {
+//    var_dump($this->googleCalendarAccounts);
     $i = 0;
     $nrAccounts = sizeof($this->googleCalendarAccounts);
     foreach ($this->googleCalendarAccounts as $googleCalendarAccount) {
@@ -139,7 +129,6 @@ class Worker {
         $googleCalendarAccount,
         $this->mijnknltbUser
       );
-      printMessage('START: Cleaning up Google Calendar');
       $mgs->refreshGoogleCalendar();
       $i++;
       if ($i < $nrAccounts) {

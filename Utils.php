@@ -1,10 +1,5 @@
 <?php
 
-define('PATH', '/mnt/mijnknltb2gsuite/');
-define('FILENAME_INI', 'mijnknltb2gsuite.ini');
-
-define('MY_TIMEZONE', 'Europe/Amsterdam');
-
 define('MAX_MESSAGE_WIDTH', 76);
 define('MAX_WIDTH', 80);
 define('MAX_HEADER_TEXT', 28);
@@ -17,18 +12,6 @@ define('STRING_BACKUP', 'backup');
 define('STRING_COMMENTS', 'comments');
 define('STRING_DRIVERS', 'driver(s)');
 define('STRING_SNACKS', 'snacks');
-define('STRING_BACKOFF_TIMERS', 'backoff_timers');
-define('STRING_LONG', 'long');
-define('STRING_SHORT', 'short');
-define('STRING_FILENAMES', 'filenames');
-define('STRING_ACCOUNTS', 'accounts');
-define('STRING_SERVICE_ACCOUNT', 'service_account');
-define('STRING_CRON', 'cron');
-define('STRING_ON_MINUTE', 'onMinute');
-define('STRING_ON_HOUR', 'onHour');
-define('STRING_ON_DAY_OF_MONTH', 'onDayOfMonth');
-define('STRING_ON_MONTH', 'onMonth');
-define('STRING_ON_DAY_OF_WEEK', 'onDayOfWeek');
 
 function getHeaderString($header) {
   if (MAX_HEADER_TEXT < strlen($header)) {
@@ -69,22 +52,15 @@ function getHeaderSnacks() {
   return getHeaderString(STRING_SNACKS);
 }
 
-function getSettings() {
-  if (file_exists(PATH . FILENAME_INI)) {
-    // return the settings from the file at the path of data files
-    return parse_ini_file(PATH . FILENAME_INI, true);
-  } else {
-    // return the settings from the file in the current directory
-    return parse_ini_file(FILENAME_INI, true);
-  }
-}
-
 function printBasicMessage($message) {
+  echo " -> $message\n";
+/*
   if (MAX_MESSAGE_WIDTH - 1 > strlen($message)) {
     echo " -> $message\n";
   } else {
     printBasicString($message);
   }
+*/
 }
 
 function printBasicString($string) {

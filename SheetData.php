@@ -3,7 +3,6 @@ class SheetData {
 
   private $fileId;
 
-  private $data;
   private $playerNames = [];
   private $playerFirstNames = [];
   private $comments = [];
@@ -12,13 +11,10 @@ class SheetData {
   private $drivers = [];
   private $snacks = [];
 
-  function __construct($sheetsService, $fileId) {
+  function __construct($fileId, $data) {
 
     $this->fileId = $fileId;
-    $range = 'A8:AE20';
-    $this->data = $sheetsService->spreadsheets_values->get($fileId, $range)->getValues();
-
-//    echo "SheetData: " . json_encode($this->data) . "\n";
+    
     for ($i = 0; 10 > $i; $i++) {
       $this->selections[$i] = [];
       $this->backups[$i] = [];
@@ -26,9 +22,8 @@ class SheetData {
       $this->snacks[$i] = [];
     }
 
-    if (!is_null($this->data)) {
-      foreach ($this->data as $row=>$rowArray) {
-//        printBasicMessage(json_encode($rowArray));
+    if (!is_null($data)) {
+      foreach ($data as $row=>$rowArray) {
         if (10 > $row) {
           // Read player names
           $name = $rowArray[0];
@@ -46,7 +41,6 @@ class SheetData {
             $backup = strcmp($data, 'BACKUP');
             if ((false !== $yes) and (0 == $yes)) {
               ($this->selections[$i])[] = $name;
-//              echo "$name " . json_encode($this->selections[$i]) . "\n";
             } elseif ((false !== $backup) and (0 == $backup)) {
               $this->backups[$i][] = $name;
             }
@@ -68,8 +62,6 @@ class SheetData {
         }
       }
     }
-//    echo 'Selections: ' . json_encode($this->selections) . "\n";
-//    echo $this->toString();
   }
 
   function getBackups($matchNr) {

@@ -1,7 +1,8 @@
 <?php
 
 include 'Utils.php';
-include 'HtmlParser.php';
+require_once('HtmlParser.php');
+require_once('Mijnknltb2GSuiteSettings.php');
 
 class MijnknltbWebBroker {
 
@@ -9,7 +10,6 @@ class MijnknltbWebBroker {
   private $curl;
   // this string will hold the responses to the curl exec calls
   private $response;
-  private const FILENAME_COOKIE = PATH . 'cookies.txt';
   private const KEYWORD_COOKIEWALL = 'CookiePurposes_0_';
   private const KEYWORD_LOGIN = 'form_login';
   private const KEYWORD_PLAYER_PROFILE = 'player-profile';
@@ -27,15 +27,26 @@ class MijnknltbWebBroker {
 
   private $htmlParser;
 
+  private $cookiesFilename;
+
   function __construct($mijnknltbUser) {
+    $mk2gsSettings = Mijnknltb2GSuiteSettings::getInstance();
+    $this->cookiesFilename = $mk2gsSettings->getCookiesFilename();
+
     $this->username = $mijnknltbUser->getLogin();
     $this->password = $mijnknltbUser->getPassword();
     $this->curl = curl_init();
     $this->htmlParser = HtmlParser::getInstance();
 
     // Let's use cookies
-    curl_setopt($this->curl, CURLOPT_COOKIEJAR, self::FILENAME_COOKIE);
-    curl_setopt($this->curl, CURLOPT_COOKIEFILE, self::FILENAME_COOKIE);
+    curl_setopt(
+      $this->curl,
+      CURLOPT_COOKIEJAR,
+      $this->cookiesFilename);
+    curl_setopt(
+      $this->curl,
+      CURLOPT_COOKIEFILE,
+      $this->cookiesFilename);
 
     // CURLOPT_VERBOSE: TRUE to output verbose information. Writes output to
     // STDERR, or the file specified using CURLOPT_STDERR.
@@ -55,7 +66,7 @@ class MijnknltbWebBroker {
 
   private function makeHttpRequest($url, $isPostRequest, $payload) {
 
-    $httpHeader = array($this->getCookieHeaderString(self::FILENAME_COOKIE));
+    $httpHeader = array($this->getCookieHeaderString($this->cookiesFilename));
 
     curl_setopt_array($this->curl, array(
       CURLOPT_URL => $url,
@@ -141,9 +152,8 @@ class MijnknltbWebBroker {
   }
 
   private function setMatchDetails($matches) {
-    printMessage("matches: " . count($matches));
     foreach ($matches as $match) {
-      $httpHeader = array($this->getCookieHeaderString(self::FILENAME_COOKIE));
+      $httpHeader = array($this->getCookieHeaderString($this->cookiesFilename));
       curl_setopt_array($this->curl, array(
         CURLOPT_URL => $match->getUrl(),
         CURLOPT_RETURNTRANSFER => true,
@@ -183,7 +193,6 @@ class MijnknltbWebBroker {
 
     if (is_null($filters)) {
       // Let's grab all the events of this league and team combo
-      printMessage('Grabbing all matches');
       $matches = array_merge($matches, $this->htmlParser->getMatches($this->response, $teamId));
     } else {
       // We have to apply the filter, so let's check if this team is in the team filters

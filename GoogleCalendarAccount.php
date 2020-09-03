@@ -1,15 +1,20 @@
 <?php
 class GoogleCalendarAccount {
-  private $description = 'Default description for Google Calendar';
+  private $description;
   private $identifier;
   private $mijnknltbProfileIds;
   private $leaguesFilter = NULL;
   private $leaguesOnly = false;
   private $lastUpdate = 0;
 
-  function __construct($identifier, $mijnknltbProfileIds) {
+  function __construct(
+    $identifier,
+    $mijnknltbProfileIds,
+    $description = 'Default description for GCal') {
+
     $this->identifier = $identifier;
     $this->mijnknltbProfileIds = $mijnknltbProfileIds;
+    $this->description = $description;
   }
 
   function getIdentifier() {

@@ -2,17 +2,18 @@
 
 include_once __DIR__ . '/vendor/autoload.php';
 
-include_once('SheetData.php');
-include_once('BackoffTimer.php');
+require_once('SheetData.php');
+require_once('BackoffTimer.php');
+require_once('Mijnknltb2GSuiteSettings.php');
 
 /*
 * Singleton interface into the Google API.
 * Public method:
 */
 class GoogleApiBroker {
+
   private static $instance = NULL;
-//  private const FILENAME_GOOGLE_SERVICE_ACCOUNT =
-//  PATH . 'GoogleApiServiceAccount.json';
+
   private const STRING_GOOGLE_SHEETS_ID_PREFIX = 'MIJNKNLTB.';
   private const FILENAME_TEMPLATE = '!MIJNKNLTB-TEMPLATE-complete-team-schedule';
   private const GOOGLE_SHEET_COLUMNS_HEADERS = ['B', 'E', 'H', 'K', 'N', 'Q', 'T', 'W', 'Z'];
@@ -31,8 +32,12 @@ class GoogleApiBroker {
   private $files = [];
   private $templateFileId;
 
+  private $mk2gsSettings;
+
   private function __construct() {
-    $this->processIniFile();
+    $this->mk2gsSettings = Mijnknltb2GSuiteSettings::getInstance();
+//    $this->processIniFile();
+    $this->filenameServiceAccount = $this->mk2gsSettings->getServiceAccountFilename();
     putenv(
 //      'GOOGLE_APPLICATION_CREDENTIALS=' . self::FILENAME_GOOGLE_SERVICE_ACCOUNT
       'GOOGLE_APPLICATION_CREDENTIALS=' . $this->filenameServiceAccount
@@ -80,9 +85,6 @@ class GoogleApiBroker {
       // This is a league match, so let's add the link to the Google DRIVE
       // spreadsheet
 
-//      $league = new League($match->getLeagueId(), $match->getTeamId());
-//      $file = $this->getGoogleDocsFile($league);
-
       $sheetData = $match->getSheetData();
       $fileId = $sheetData->getFileId();
       $url = 'https://docs.google.com/spreadsheets/d/' . $fileId;
@@ -111,22 +113,53 @@ class GoogleApiBroker {
       'end' => $match->getEnd(),
     );
 
-    printBasicMessage('ADD MATCH: ' . $match->getStartHuman() .
-    ' with title "' . $match->getBasicSummary() . '" to GCal.');
+    printBasicMessage(
+      'GCALL ADD: ' .
+      '"' . $match->getBasicSummary() . '"' .
+      ' at ' .
+      $match->getStartRFC3339() );
+
     $event = new Google_Service_Calendar_Event($matchArray);
-    $event = $this->calendarService->events->insert($googleCalendarId, $event);
+
+    try {
+      $this->calendarService->events->insert($googleCalendarId, $event);
+    } catch (Exception $e) {
+      if (403 == $e->getCode()) {
+        // Rate limit exceeded
+        BackoffTimer::getInstance()->increaseShort();
+        BackoffTimer::getInstance()->sleep('Hit rate limit', true);
+      } else {
+        throw($e);
+      }
+    }
   }
 
   function getSheetData($league) {
     $filename = self::STRING_GOOGLE_SHEETS_ID_PREFIX .
       $league->getLeagueId() . '.' .
       $league->getTeamId();
+    $range = 'A8:AE20';
 
     if (!array_key_exists($filename, $this->files)) {
       $newFile = $this->copyTemplate($league, $filename);
       $this->files[$filename] = $newFile->getId();
     }
-    return new SheetData($this->sheetsService, $this->files[$filename]);
+
+    try {
+      $data = $this->sheetsService->spreadsheets_values->get(
+        $this->files[$filename],
+        $range
+      )->getValues();
+      return new SheetData($this->files[$filename], $data);
+    } catch (Exception $e) {
+      if (403 == $e->getCode()) {
+        // Hit rate limit
+        BackoffTimer::getInstance()->increaseShort();
+        $this->getSheetData($league);
+      } else {
+        throw($e);
+      }
+    }
   }
 
   function clearEvents($googleCalendarAccount) {
@@ -152,8 +185,8 @@ class GoogleApiBroker {
         $this->calendarService->getClient()->getClientId(),
         $creator->getId())
       ) {
-        printBasicMessage('DEL: "' .
-        $event->getSummary() . '" from GCal');
+        printBasicMessage('GCAL DEL: "' .
+        $event->getSummary() . '"');
         $this->calendarService->events->delete(
           $googleCalendarId, $event->getId()
         );
@@ -209,7 +242,7 @@ class GoogleApiBroker {
         printMessage('No files found.');
       } else {
         foreach ($this->files as $fileName => $fileId) {
-          printBasicMessage("DEL:\t" . $fileName);
+          printBasicMessage("GDRIVE DEL:\t" . $fileName);
           $this->driveService->files->delete($fileId);
         }
       }
@@ -476,9 +509,8 @@ class GoogleApiBroker {
     }
 
     function processIniFile() {
-      $settings = getSettings();
-      $filenames = $settings[STRING_FILENAMES];
-      $this->filenameServiceAccount = PATH . $filenames[STRING_SERVICE_ACCOUNT];
+      $this->filenameServiceAccount =
+        $this->mk2gsSettings->getServiceAccountFilename();
     }
 
     function transferOwnership($file) {
