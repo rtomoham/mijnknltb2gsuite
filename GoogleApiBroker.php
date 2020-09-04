@@ -407,7 +407,7 @@ class GoogleApiBroker {
     //          $newFile = $this->driveService->files->copy($file->getId());
     $newFile = new Google_Service_Drive_DriveFile();
     $newFile->setName($filename);
-    $newFile = $this->driveService->files->copy($file->getId(), $newFile);
+    $newFile = $this->driveService->files->copy($this->templateFileId, $newFile);
 
     $this->initializeSheet($newFile, $league);
 
