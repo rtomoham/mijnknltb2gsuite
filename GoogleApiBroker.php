@@ -271,9 +271,9 @@ class GoogleApiBroker {
           if (false !== $pos) {
             if (0 == $pos) {
               $this->files[$file->getName()] = $file->getId();
-            } elseif (0 == strcmp(self::TEMPLATE-complete-team-schedule, $file->getName())) {
-              $this->templateFileId = $file->getId();
             }
+          } elseif (0 == strcmp(self::FILENAME_TEMPLATE, $file->getName())) {
+            $this->templateFileId = $file->getId();
           }
         }
 
