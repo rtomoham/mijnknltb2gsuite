@@ -8,6 +8,7 @@ class Settings {
   protected static $instance = NULL;
 
   private const MY_DATE_TIME_ZONE = 'Europe/Amsterdam';
+  private const STRING_CRON = 'cron';
 
   private $programName;
   protected $dataPath = '';
@@ -45,6 +46,10 @@ class Settings {
       // return the settings from the file in the current directory
       $this->data = parse_ini_file($programName . '.ini', true);
     }
+  }
+  
+  function getCron() {
+    return $this->data[self::STRING_CRON];
   }
 
   function getDataPath() {
