@@ -8,13 +8,13 @@ class Settings {
   protected static $instance = NULL;
 
   private const MY_DATE_TIME_ZONE = 'Europe/Amsterdam';
-  public static const STRING_CRON = 'cron';
+  public const STRING_CRON = 'cron';
   
-  public static const STRING_ON_MINUTE = 'onMinute';
-  public static const STRING_ON_HOUR = 'onHour';
-  public static const STRING_ON_DAY_OF_MONTH = 'onDayOfMonth';
-  public static const STRING_ON_MONTH = 'onMonth';
-  public static const STRING_ON_DAY_OF_WEEK = 'onDayOfWeek';
+  public const STRING_ON_MINUTE = 'onMinute';
+  public const STRING_ON_HOUR = 'onHour';
+  public const STRING_ON_DAY_OF_MONTH = 'onDayOfMonth';
+  public const STRING_ON_MONTH = 'onMonth';
+  public const STRING_ON_DAY_OF_WEEK = 'onDayOfWeek';
 
   private $programName;
   protected $dataPath = '';
