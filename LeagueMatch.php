@@ -9,11 +9,14 @@ class LeagueMatch extends Match {
   private $teamId;
   private $players;
   private $nr;
+  private $shortLeagueName;
 
   function __construct($matchId, $summary, $leagueName, $leagueId, $start, $home, $away) {
     parent::__construct($matchId, $summary, NULL, $leagueId, $start, $home, $away);
 
     parent::setAdditionalName($leagueName);
+    $this->setShortLeagueName($leagueName);
+
     $this->url =
       parent::STRING_URL_PREFIX .
       self::STRING_URL_INFIX_LEAGUE . $leagueId .
@@ -36,6 +39,14 @@ class LeagueMatch extends Match {
     return $this->players;
   }
 
+  function getSummary() {
+    if (is_null($this->shortLeagueName)) {
+      return parent::getSummary();
+    } else {
+      return $this->summary . ' (' . $this->shortLeagueName . ')';
+    }
+  }
+
   function getTeamId() {
     return $this->teamId;
   }
@@ -46,6 +57,7 @@ class LeagueMatch extends Match {
 
   function setLeagueName($leagueName) {
     $this->$additionalName = $leagueName;
+    $this->setShortLeagueName($leagueName);
   }
 
   function setMatchNumber($number) {
@@ -54,6 +66,17 @@ class LeagueMatch extends Match {
 
   function setPlayers($players) {
     $this->players = $players;
+  }
+
+  function setShortLeagueName($leagueName) {
+    $regEx = '/.+(jaar|17\\+|35\\+|50\\+|Tenniskids Rood|Tenniskids Oranje|Tenniskids Groen)/';
+    preg_match($regEx, $leagueName, $matches);
+
+    if (!is_null($matches)) {
+      if (0 < sizeof($matches)) {
+        $this->shortLeagueName = $matches[0];
+      }
+    }
   }
 
   function setTeamId($teamId) {

@@ -99,12 +99,17 @@ class GoogleApiBroker {
       }
     }
 
+    $summary = $match->getSummary();
+    if (0 < strlen($matchDetails[1])) {
+      $summary .= ' - ' . $matchDetails[1];
+    }
+
     $matchArray = array(
-      'summary' => $match->getSummary(),
+      'summary' => $summary,
       'location' => $match->getLocation(),
       'description' =>
       getHeaderPlayers() .
-      $matchDetails .
+      $matchDetails[0] .
       $match->getDescription() .
       getHeaderGoogleSheet() .
       $linkToGoogleSheet . "\n" .
@@ -114,7 +119,7 @@ class GoogleApiBroker {
     );
 
     printBasicMessage(
-      'GCALL ADD: ' .
+      'GCAL ADD: ' .
       '"' . $match->getBasicSummary() . '"' .
       ' at ' .
       $match->getStartRFC3339() );
@@ -286,50 +291,55 @@ class GoogleApiBroker {
   }
 
   function getMatchDetails($sheetData, $matchNr) {
-    $matchDetails = '';
+    $matchDetails[0] = '';
+    $matchDetails[1] = '';
     $players = $sheetData->getPlayers($matchNr);
     if (0 == count($players)) {
-      $matchDetails .= "   None selected (yet)\n";
+      $matchDetails[0] .= "   None selected (yet)\n";
     } else {
       foreach ($players as $playerName) {
-        $matchDetails .= " - $playerName\n";
+        $matchDetails[0] .= " - $playerName\n";
+        $playerFirstName = substr($playerName, 0, strpos($playerName, ' '));
+        $matchDetails[1] .= "$playerFirstName ";
       }
     }
     $backups = $sheetData->getBackups($matchNr);
     if (0 != count($backups)) {
-      $matchDetails .= getHeaderBackup();
+      $matchDetails[0] .= getHeaderBackup();
       foreach ($backups as $playerName) {
-        $matchDetails .= " - $playerName\n";
+        $matchDetails[0] .= " - $playerName\n";
       }
     }
     $drivers = $sheetData->getDrivers($matchNr);
     if (0 != count($drivers)) {
-      $matchDetails .= getHeaderDrivers();
-      $matchDetails .= '  ';
+      $matchDetails[0] .= getHeaderDrivers();
+      $matchDetails[0] .= '  ';
       foreach ($drivers as $playerFirstName) {
-        $matchDetails .= " $playerFirstName,";
+        $matchDetails[0] .= " $playerFirstName,";
       }
-      $matchDetails = substr($matchDetails, 0, -1);
-      $matchDetails .= "\n";
+      $matchDetails[0] = substr($matchDetails[0], 0, -1);
+      $matchDetails[0] .= "\n";
     }
     $snacks = $sheetData->getSnacks($matchNr);
     if (0 != count($snacks)) {
-      $matchDetails .= getHeaderSnacks();
-      $matchDetails .= '  ';
+      $matchDetails[0] .= getHeaderSnacks();
+      $matchDetails[0] .= '  ';
       foreach ($snacks as $playerFirstName) {
-        $matchDetails .= " $playerFirstName,";
+        $matchDetails[0] .= " $playerFirstName,";
       }
-      $matchDetails = substr($matchDetails, 0, -1);
-      $matchDetails .= "\n";
+      $matchDetails[0] = substr($matchDetails[0], 0, -1);
+      $matchDetails[0] .= "\n";
     }
 
     $comments = $sheetData->getComments($matchNr);
     if (0 != strcmp('no comments', $comments)) {
-      $matchDetails .= getheaderComments();
-      $matchDetails .= $comments;
+      $matchDetails[0] .= getheaderComments();
+      $matchDetails[0] .= $comments;
     }
 
-    return $matchDetails . "\n";
+    $matchDetails[0] .= "\n";
+    return $matchDetails;
+
   }
 
   function getSelectedTeamString($spreadsheetId, $matchNr) {

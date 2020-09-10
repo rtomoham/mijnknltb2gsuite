@@ -13,7 +13,7 @@ class Event {
   private const KEYWORD_TIMEZONE = 'timeZone';
   private $start;
   protected $end;
-  private $summary = 'Default event summary';
+  protected $summary = 'Default event summary';
   private $description = 'Default event description';
   private $location = 'Default event location';
   protected $id = 'Default event ID';
