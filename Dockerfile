@@ -24,8 +24,8 @@ RUN apt install php-cli php-curl php-dom composer unzip wget -y && \
 #ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 ADD "http://random.tomohamat.com/" skipcache
 RUN cd /etc && \
-	wget https://github.com/rtomoham/${HELPER_NAME}/archive/${PROGRAM_NAME}.zip && \
-	unzip -j ${PROGRAM_NAME}.zip */src/* -d ${PROGRAM_NAME}
+	wget https://github.com/rtomoham/${HELPER_NAME}/archive/generic.zip && \
+	unzip -j generic.zip */src/* -d ${PROGRAM_NAME}
 RUN cd /etc && \
 	wget https://github.com/rtomoham/${PROGRAM_NAME}/archive/master.zip && \
 	unzip -j master.zip -d ${PROGRAM_NAME} && \
@@ -34,6 +34,6 @@ RUN cd /etc && \
 #	/usr/bin/php CrontabManager.php
 
 # Clean up APT when done.
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/master.zip /etc/${HELPER_NAME}.zip
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /etc/master.zip /etc/generic.zip
 
 ENTRYPOINT /etc/mijnknltb2gsuite/init
