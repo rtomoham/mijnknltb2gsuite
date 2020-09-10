@@ -76,13 +76,16 @@ class HtmlParser {
           $subclass = $div->getAttribute("class");
           $teamName = $div->nodeValue;
           $teamName = trim($teamName);
-          switch ($subclass) {
-            case 'team-match__name is-team-1':
-            $team1 = $teamName;
-            break;
-            case 'team-match__name is-team-2':
-            $team2 = $teamName;
-            break;
+          $pos = strpos($subclass, 'is-team-');
+          if (false !== $pos) {
+            $pos = strpos($subclass, 'is-team-1');
+            if (false !== $pos) {
+              $team1 = $teamName;
+            }
+            $pos = strpos($subclass, 'is-team-2');
+            if (false !== $pos) {
+              $team2 = $teamName;
+            }
           }
         }
         $summary = "$team1 vs $team2";
