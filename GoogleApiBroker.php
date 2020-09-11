@@ -104,16 +104,17 @@ class GoogleApiBroker {
       $summary .= ' - ' . $matchDetails[1];
     }
 
-    $matchArray = array(
-      'summary' => $summary,
-      'location' => $match->getLocation(),
-      'description' =>
-      getHeaderPlayers() .
+    $description = getHeaderPlayers() .
       $matchDetails[0] .
       $match->getDescription() .
       getHeaderGoogleSheet() .
       $linkToGoogleSheet . "\n" .
-      "\nLast update: " . date('Y-m-d H:i') . 'h',
+      "\nLast update: " . date('Y-m-d H:i') . 'h';
+
+    $matchArray = array(
+      'summary' => $summary,
+      'location' => $match->getLocation(),
+      'description' => $description,
       'start' => $match->getStart(),
       'end' => $match->getEnd(),
     );

@@ -91,28 +91,31 @@ class Mijnknltb2GSuite {
       );
 
       $allMatches = [];
-      foreach ($leaguesAndTeams as list($leagueAndTeam)) {
-        $leagueId = $leagueAndTeam[0];
-        $teamId = $leagueAndTeam[1];
-        $league = new League($leagueId, $teamId);
+      foreach ($leaguesAndTeams as $leaguesAndTeamsPerPlayer) {
+        foreach ($leaguesAndTeamsPerPlayer as $leagueAndTeam) {
+          var_dump($leagueAndTeam);
+          $leagueId = $leagueAndTeam[0];
+          $teamId = $leagueAndTeam[1];
+          $league = new League($leagueId, $teamId);
 
-        $matches = $this->getMatches(
-          $leagueId,
-          $teamId,
-          $this->leaguesFilters
-        );
-        $league->setMatches($matches);
+          $matches = $this->getMatches(
+            $leagueId,
+            $teamId,
+            $this->leaguesFilters
+          );
+          $league->setMatches($matches);
 
-        foreach ($matches as $matchNr=>$match) {
-          if ($match->isLeagueMatch()) {
-            if (0 == $matchNr) {
-              $sheetData = $this->googleApiBroker->getSheetData($league);
-              BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');
+          foreach ($matches as $matchNr=>$match) {
+            if ($match->isLeagueMatch()) {
+              if (0 == $matchNr) {
+                $sheetData = $this->googleApiBroker->getSheetData($league);
+                BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');
+              }
+              $match->setSheetData($sheetData);
             }
-            $match->setSheetData($sheetData);
           }
+          $allMatches = array_merge($allMatches, $matches);
         }
-        $allMatches = array_merge($allMatches, $matches);
       }
 
       printMessage(
