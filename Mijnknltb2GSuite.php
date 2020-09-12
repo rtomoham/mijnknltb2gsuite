@@ -93,7 +93,6 @@ class Mijnknltb2GSuite {
       $allMatches = [];
       foreach ($leaguesAndTeams as $leaguesAndTeamsPerPlayer) {
         foreach ($leaguesAndTeamsPerPlayer as $leagueAndTeam) {
-          var_dump($leagueAndTeam);
           $leagueId = $leagueAndTeam[0];
           $teamId = $leagueAndTeam[1];
           $league = new League($leagueId, $teamId);

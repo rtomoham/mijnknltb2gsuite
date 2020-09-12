@@ -20,6 +20,9 @@ class Match extends Event {
   private $home;
   private $away;
 
+  private $scoreHome = -1;
+  private $scoreAway = -1;
+
   private $sheetData;
 
   /*
@@ -87,16 +90,31 @@ class Match extends Event {
     return parent::getId();
   }
 
+  function getScore() {
+    if ($this->hasScore()) {
+      return $this->scoreHome . ' - ' . $this->scoreAway;
+    } else {
+      return '';
+    }
+  }
+
   function getSheetData() {
     return $this->sheetData;
   }
 
   function getSummary() {
-    return parent::getSummary() . ' (' . $this->additionalName . ')';
+    if ($this->hasScore()) {
+      $score = ' (' . $this->getScore() . ')';
+    }
+    return parent::getSummary() . $score . ' [' . $this->additionalName . ']';
   }
 
   function getUrl() {
     return $this->url;
+  }
+
+  function hasScore() {
+    return ((0 <= $this->scoreHome) and (0 <= $this->scoreAway));
   }
 
   function isLeagueMatch() {
@@ -113,6 +131,19 @@ class Match extends Event {
 
   function setAlert($alert) {
     $this->alert = $alert;
+  }
+
+  function setScore($scoreHome, $scoreAway) {
+    $this->setScoreHome($scoreHome);
+    $this->setScoreAway($scoreAway);
+  }
+
+  function setScoreAway($score) {
+    $this->scoreAway = $score;
+  }
+
+  function setScoreHome($score) {
+    $this->scoreHome = $score;
   }
 
   function setSheetData($sheetData) {

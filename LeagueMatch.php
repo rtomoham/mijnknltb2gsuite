@@ -43,7 +43,12 @@ class LeagueMatch extends Match {
     if (is_null($this->shortLeagueName)) {
       return parent::getSummary();
     } else {
-      return $this->summary . ' (' . $this->shortLeagueName . ')';
+      if ($this->hasScore()) {
+        $score = ' (' . $this->getScore() . ')';
+      } else {
+        $score = '';
+      }
+      return $this->summary . $score . ' [' . $this->shortLeagueName . ']';
     }
   }
 

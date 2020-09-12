@@ -181,6 +181,17 @@ class HtmlParser {
       } elseif (0 == strcmp($class, 'h-card')) {
         $location = $div->nodeValue;
         $match->setLocation($this->cleanupString($location));
+      // Or the scores (if already played)
+      } elseif (0 == strcmp($class, 'score score--large')) {
+        $spans = $div->getElementsByTagName('span');
+        foreach ($spans as $span) {
+          $spanClass = $span->getAttribute('class');
+          if (0 == strcmp($spanClass, 'is-team-1')) {
+            $match->setScoreHome($span->nodeValue);
+          } elseif (0 == strcmp($spanClass, 'is-team-2')) {
+            $match->setScoreAway($span->nodeValue);
+          }
+        }
       }
     }
 
