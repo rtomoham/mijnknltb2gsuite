@@ -295,13 +295,21 @@ class GoogleApiBroker {
     $matchDetails[0] = '';
     $matchDetails[1] = '';
     $players = $sheetData->getPlayers($matchNr);
+    $drivers = $sheetData->getDrivers($matchNr);
+    $snacks = $sheetData->getSnacks($matchNr);
     if (0 == count($players)) {
       $matchDetails[0] .= "   None selected (yet)\n";
     } else {
       foreach ($players as $playerName) {
         $matchDetails[0] .= " - $playerName\n";
         $playerFirstName = substr($playerName, 0, strpos($playerName, ' '));
-        $matchDetails[1] .= "$playerFirstName ";
+        $matchDetails[1] .= $playerFirstName;
+        if ((in_array($playerFirstName, $drivers)) or
+          (in_array($playerFirstName, $snacks))) {
+          $matchDetails[1] .= '* ';
+        } else {
+          $matchDetails[1] .= ' ';
+        }
       }
     }
     $backups = $sheetData->getBackups($matchNr);
@@ -311,7 +319,6 @@ class GoogleApiBroker {
         $matchDetails[0] .= " - $playerName\n";
       }
     }
-    $drivers = $sheetData->getDrivers($matchNr);
     if (0 != count($drivers)) {
       $matchDetails[0] .= getHeaderDrivers();
       $matchDetails[0] .= '  ';
@@ -321,7 +328,6 @@ class GoogleApiBroker {
       $matchDetails[0] = substr($matchDetails[0], 0, -1);
       $matchDetails[0] .= "\n";
     }
-    $snacks = $sheetData->getSnacks($matchNr);
     if (0 != count($snacks)) {
       $matchDetails[0] .= getHeaderSnacks();
       $matchDetails[0] .= '  ';
