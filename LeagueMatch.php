@@ -74,7 +74,7 @@ class LeagueMatch extends Match {
   }
 
   function setShortLeagueName($leagueName) {
-    $regEx = '/.+(jaar|17\\+|35\\+|50\\+|Tenniskids Rood|Tenniskids Oranje|Tenniskids Groen)/';
+    $regEx = '/.+(jaar|17\\+|35\\+|50\\+|Tenniskids Rood|Tenniskids Oranje|Tenniskids Groen|Gemengd Zondag)/';
     preg_match($regEx, $leagueName, $matches);
 
     if (!is_null($matches)) {
