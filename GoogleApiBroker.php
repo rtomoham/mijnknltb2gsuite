@@ -104,7 +104,13 @@ class GoogleApiBroker {
       $summary .= ' - ' . $matchDetails[1];
     }
 
-    $description = getHeaderPlayers() .
+    if ($match->hasScore()) {
+      $description = 'Uitslag: ' . $match->getScore() . "\n\n";
+    } else {
+      $description = '';
+    }
+    $description .=
+      getHeaderPlayers() .
       $matchDetails[0] .
       $match->getDescription() .
       getHeaderGoogleSheet() .

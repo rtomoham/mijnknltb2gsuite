@@ -106,7 +106,7 @@ class Match extends Event {
     if ($this->hasScore()) {
       $score = ' (' . $this->getScore() . ')';
     }
-    return parent::getSummary() . $score . ' [' . $this->additionalName . ']';
+    return parent::getSummary() . $this->getScore() . ' [' . $this->additionalName . ']';
   }
 
   function getUrl() {
