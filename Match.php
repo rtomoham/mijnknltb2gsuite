@@ -32,9 +32,9 @@ class Match extends Event {
   * $matchId and $additionalId
   */
   function __construct(
-    $matchId, $summary, $description, $additionalId, $start, $home, $away) {
+    $matchId, $summary, $description, $additionalId, $start, $duration, $home, $away) {
 
-    parent::__construct($matchId, $summary, NULL, NULL, $start);
+    parent::__construct($matchId, $summary, NULL, NULL, $start, $duration);
     $this->additionalId = $additionalId;
     $this->home = $home;
     $this->away = $away;

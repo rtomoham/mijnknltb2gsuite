@@ -86,13 +86,25 @@ class Mijnknltb2GSuite {
       );
       $this->clearGoogleCalendar();
 
-      $leaguesAndTeams = $this->mijnknltbWebBroker->getLeaguesAndTeams(
-        $this->googleCalendarAccount->getMijnknltbProfileIds()
-      );
+      $leaguesAndTeams = [];
+      $playerProfileIds =
+        $this->googleCalendarAccount->getMijnknltbProfileIds();
+      $i = 1; $j = count($playerProfileIds);
+      foreach ($playerProfileIds as $playerProfileId) {
+        printMessage("PlayerProfileId $i of $j:\t" . $playerProfileId); $i++;
 
-      $allMatches = [];
-      foreach ($leaguesAndTeams as $leaguesAndTeamsPerPlayer) {
-        foreach ($leaguesAndTeamsPerPlayer as $leagueAndTeam) {
+        $response = $this->mijnknltbWebBroker->fetchPlayerProfile($playerProfileId);
+        // First parse all league matches
+        $leaguesAndTeams =
+          $this->mijnknltbWebBroker->getLeaguesAndTeams($response);
+        // Next, parse all tournament matches
+        $tournaments =
+          $this->mijnknltbWebBroker->getTournaments($response);
+
+        // Now, let's put all the matches in an array
+        $allMatches = [];
+        // First, the league matches
+        foreach ($leaguesAndTeams as $leagueAndTeam) {
           $leagueId = $leagueAndTeam[0];
           $teamId = $leagueAndTeam[1];
           $league = new League($leagueId, $teamId);
@@ -115,15 +127,33 @@ class Mijnknltb2GSuite {
           }
           $allMatches = array_merge($allMatches, $matches);
         }
-      }
 
-      printMessage(
-        'GCAL ADD: ' . sizeof($allMatches) . ' matches [' .
-        $this->googleCalendarAccount->getDescription() . ']'
-      );
-      foreach ($allMatches as $match) {
-        $this->googleApiBroker->addEvent($match, $this->googleCalendarAccount);
-        BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');
+        // Now we add all the tournament matches, i.e, official knltb tournaments
+        foreach ($tournaments as $tournament) {
+          $draws = $tournament->getDraws();
+          if (0 < sizeof($draws)) {
+            foreach ($tournament->getDraws() as $draw) {
+              $matches = $draw->getMatches();
+              if (0 < sizeof($matches)) {
+                foreach ($draw->getMatches() as $match) {
+                  $allMatches[] = $match;
+                }
+              }
+            }
+          }
+        }
+
+
+
+        // Time to upload all matches to Google Calendar
+        printMessage(
+          'GCAL ADD: ' . sizeof($allMatches) . ' matches [' .
+          $this->googleCalendarAccount->getDescription() . ']'
+        );
+        foreach ($allMatches as $match) {
+          $this->googleApiBroker->addEvent($match, $this->googleCalendarAccount);
+          BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');
+        }
       }
     }
   }

@@ -94,29 +94,32 @@ class GoogleApiBroker {
       $matchNr = $match->getMatchNumber();
       $matchDetails = $this->getMatchDetails($sheetData, $matchNr);
 
+      $summary = $match->getSummary();
+      if (0 < strlen($matchDetails[1])) {
+        $summary .= ' - ' . $matchDetails[1];
+      }
+
+      if ($match->hasScore()) {
+        $description = 'Uitslag: ' . $match->getScore() . "\n\n";
+      } else {
+        $description = '';
+      }
+      $description .=
+        getHeaderPlayers() .
+        $matchDetails[0] .
+        $match->getDescription() .
+        getHeaderGoogleSheet() .
+        $linkToGoogleSheet . "\n" .
+        "\nLast update: " . date('Y-m-d H:i') . 'h';
+
       if (!is_null($url)) {
         $linkToGoogleSheet = $url;
       }
-    }
-
-    $summary = $match->getSummary();
-    if (0 < strlen($matchDetails[1])) {
-      $summary .= ' - ' . $matchDetails[1];
-    }
-
-    if ($match->hasScore()) {
-      $description = 'Uitslag: ' . $match->getScore() . "\n\n";
     } else {
-      $description = '';
+      // This is a tournament match
+      $summary = $match->getSummary();
+      $description = $match->getDescription();
     }
-    $description .=
-      getHeaderPlayers() .
-      $matchDetails[0] .
-      $match->getDescription() .
-      getHeaderGoogleSheet() .
-      $linkToGoogleSheet . "\n" .
-      "\nLast update: " . date('Y-m-d H:i') . 'h';
-
     $matchArray = array(
       'summary' => $summary,
       'location' => $match->getLocation(),

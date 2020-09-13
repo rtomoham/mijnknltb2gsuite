@@ -96,7 +96,7 @@ class MijnknltbWebBroker {
     $this->makeHttpRequest($url, true, $payload);
   }
 
-  private function fetchPlayerProfile($playerProfileId) {
+  function fetchPlayerProfile($playerProfileId) {
     $url = self::URL_PLAYER_PROFILE . $playerProfileId;
     $this->makeHttpRequest($url, false, NULL);
 
@@ -109,6 +109,7 @@ class MijnknltbWebBroker {
     } else {
       printMessage("Did not face cookiewall fetching player profile");
     }
+    return $this->response;
   }
 
   private function fetchMatches($leagueId, $teamId) {
@@ -174,16 +175,8 @@ class MijnknltbWebBroker {
     }
   }
 
-  function getLeaguesAndTeams($playerProfileIds) {
-    $leaguesAndTeams = [];
-    $i = 1; $j = count($playerProfileIds);
-    foreach ($playerProfileIds as $playerProfileId) {
-      printMessage("PlayerProfileId $i of $j:\t" . $playerProfileId); $i++;
-
-      $this->fetchPlayerProfile($playerProfileId);
-      $leaguesAndTeams[] = $this->htmlParser->getLeaguesAndTeams($this->response);
-    }
-    return $leaguesAndTeams;
+  function getLeaguesAndTeams($html) {
+    return $this->htmlParser->getLeaguesAndTeams($html);
   }
 
   function getMatches($leagueId, $teamId, $filters) {
@@ -208,6 +201,10 @@ class MijnknltbWebBroker {
     // Set the location and other details for all matches
     $this->setMatchDetails($matches);
     return($matches);
+  }
+
+  function getTournaments($html) {
+    return $this->htmlParser->getTournaments($html);
   }
 
 } ?>

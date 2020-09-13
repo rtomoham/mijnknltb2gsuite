@@ -5,6 +5,7 @@ class LeagueMatch extends Match {
 
   private const STRING_URL_INFIX_LEAGUE = '/league/';
   private const STRING_URL_INFIX_TEAM = '/team-match/';
+  private const DEFAULT_DURATION = '6';
 
   private $teamId;
   private $players;
@@ -12,7 +13,9 @@ class LeagueMatch extends Match {
   private $shortLeagueName;
 
   function __construct($matchId, $summary, $leagueName, $leagueId, $start, $home, $away) {
-    parent::__construct($matchId, $summary, NULL, $leagueId, $start, $home, $away);
+    parent::__construct(
+      $matchId, $summary, NULL, $leagueId,
+      $start, self::DEFAULT_DURATION, $home, $away);
 
     parent::setAdditionalName($leagueName);
     $this->setShortLeagueName($leagueName);

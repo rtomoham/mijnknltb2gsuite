@@ -8,7 +8,6 @@ class Event {
   *   - a single time zone, i.e. Europe/Amsterdam.
   */
   private const TIME_ZONE = 'Europe/Amsterdam';
-  private const DEFAULT_DURATION = '6';
   private const KEYWORD_DATETIME = 'dateTime';
   private const KEYWORD_TIMEZONE = 'timeZone';
   private $start;
@@ -18,7 +17,7 @@ class Event {
   private $location = 'Default event location';
   protected $id = 'Default event ID';
 
-  function __construct($id, $summary, $description, $location, $start) {
+  function __construct($id, $summary, $description, $location, $start, $duration) {
       $this->id = $id;
       $this->setSummary($summary);
       $this->setDescription($description);
@@ -28,7 +27,7 @@ class Event {
       // set default duration of 6 hours
       $end = new DateTime('@' . $start);
       $end->setTimestamp($start);
-      $end->add(new DateInterval('PT' . self::DEFAULT_DURATION . 'H'));
+      $end->add(new DateInterval('PT' . $duration . 'H'));
       $this->end = $end->getTimestamp();
   }
 
