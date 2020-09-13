@@ -94,6 +94,10 @@ class GoogleApiBroker {
       $matchNr = $match->getMatchNumber();
       $matchDetails = $this->getMatchDetails($sheetData, $matchNr);
 
+      if (!is_null($url)) {
+        $linkToGoogleSheet = $url;
+      }
+
       $summary = $match->getSummary();
       if (0 < strlen($matchDetails[1])) {
         $summary .= ' - ' . $matchDetails[1];
@@ -111,10 +115,6 @@ class GoogleApiBroker {
         getHeaderGoogleSheet() .
         $linkToGoogleSheet . "\n" .
         "\nLast update: " . date('Y-m-d H:i') . 'h';
-
-      if (!is_null($url)) {
-        $linkToGoogleSheet = $url;
-      }
     } else {
       // This is a tournament match
       $summary = $match->getSummary();

@@ -143,8 +143,6 @@ class Mijnknltb2GSuite {
           }
         }
 
-
-
         // Time to upload all matches to Google Calendar
         printMessage(
           'GCAL ADD: ' . sizeof($allMatches) . ' matches [' .
