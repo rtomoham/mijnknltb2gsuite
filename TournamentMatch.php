@@ -21,7 +21,21 @@ class TournamentMatch extends Match {
   }
 
   function getDescription() {
-    return $this->getHome() . "\n   vs\n" . $this->getAway();
+    $home = $this->getHome();
+    $away = $this->getAway();
+
+    $result = $home[0]->getLink();
+    if (1 < sizeof($home)) {
+      $result .= ' & ';
+      $result .= $home[1]->getLink();
+    }
+    $result .= "\n   vs\n";
+    $result .= $away[0]->getLink();
+    if (1 < sizeof($away)) {
+      $result .= ' & ';
+      $result .= $away[1]->getLink();
+    }
+    return $result;
   }
 
   function getTournamentId() {

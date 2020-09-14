@@ -9,12 +9,14 @@ class Settings {
 
   private const MY_DATE_TIME_ZONE = 'Europe/Amsterdam';
   public const STRING_CRON = 'cron';
-  
+
   public const STRING_ON_MINUTE = 'onMinute';
   public const STRING_ON_HOUR = 'onHour';
   public const STRING_ON_DAY_OF_MONTH = 'onDayOfMonth';
   public const STRING_ON_MONTH = 'onMonth';
   public const STRING_ON_DAY_OF_WEEK = 'onDayOfWeek';
+
+  public const URL_MIJNKNLTB = 'https://mijnknltb.toernooi.nl';
 
   private $programName;
   protected $dataPath = '';
@@ -53,7 +55,7 @@ class Settings {
       $this->data = parse_ini_file($programName . '.ini', true);
     }
   }
-  
+
   function getCron() {
     return $this->data[self::STRING_CRON];
   }

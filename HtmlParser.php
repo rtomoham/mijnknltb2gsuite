@@ -5,6 +5,7 @@ require_once('LeagueMatch.php');
 require_once('Player.php');
 require_once('Tournament.php');
 require_once('Draw.php');
+require_once('TournamentPlayer.php');
 
 class HtmlParser {
 
@@ -157,6 +158,14 @@ class HtmlParser {
     }
   }
 
+  private function getTournamentPlayer($domElement) {
+    $url = $domElement->getAttribute('href');
+    $name = $domElement->nodeValue;
+    $name = $this->cleanUpString($name);
+
+    return new TournamentPlayer($name, $url);
+  }
+
   function getTournaments($html) {
     $this->domDoc->loadHTML($html);
     libxml_clear_errors();
@@ -207,34 +216,27 @@ class HtmlParser {
                       $oListItemClass = $oListItem->getAttribute('class');
                       if (0 == strcmp($oListItemClass, 'match-group__item')) {
                         $divs = $oListItem->getElementsByTagName('div');
+                        $divsParsed = 0;
                         foreach ($divs as $div) {
                           $divClass = $div->getAttribute('class');
                           if (0 == strcmp($divClass, 'match__header-title-main')) {
                             $summary = $div->nodeValue;
                             $summary = $this->cleanUpString($summary);
+                            $divsParsed++;
                           } elseif (0 == strcmp($divClass, 'match__body')) {
                             $links = $div->getElementsByTagName('a');
+                            $home = [];
+                            $away = [];
                             if (3 == $links->length) {
-                              $home = $links->item(0);
-                              $home = $home->nodeValue;
-                              $home = $this->cleanUpString($home);
-                              $away = $links->item(1);
-                              $away = $away->nodeValue;
-                              $away = $this->cleanUpString($away);
+                              $home[] = $this->getTournamentPlayer($links->item(0));
+                              $away[] = $this->getTournamentPlayer($links->item(1));
                             } elseif (5 == $links->length) {
-                              $home1 = $links->item(0);
-                              $home1 = $home1->nodeValue;
-                              $home2 = $links->item(1);
-                              $home2 = $home2->nodeValue;
-                              $home = $home1 . ' & ' . $home2;
-                              $home = $this->cleanUpString($home);
-                              $away1 = $links->item(2);
-                              $away1 = $away1->nodeValue;
-                              $away2 = $links->item(3);
-                              $away2 = $away2->nodeValue;
-                              $away = $away1 . ' & ' . $away2;
-                              $away = $this->cleanUpString($away);
+                              $home[] = $this->getTournamentPlayer($links->item(0));
+                              $home[] = $this->getTournamentPlayer($links->item(1));
+                              $away[] = $this->getTournamentPlayer($links->item(2));
+                              $away[] = $this->getTournamentPlayer($links->item(3));
                             }
+                            $divsParsed++;
                           } elseif (0 == strcmp($divClass, 'match__footer')) {
                             $spans = $div->getElementsByTagName('span');
                             $span = $spans->item(1);
@@ -249,12 +251,14 @@ class HtmlParser {
 
                               $span = $spans->item(3);
                               $location = $this->cleanUpString($span->nodeValue);
-
-                              $match = new TournamentMatch(-1, $summary, $tournament->getId(), $start, $home, $away);
-                              $match->setLocation($location);
-                              $match->setTitle($draw->getTitle());
-                              $draw->addMatch($match);
+                              $divsParsed++;
                             }
+                          }
+                          if (2 < $divsParsed) {
+                            $match = new TournamentMatch(-1, $summary, $tournament->getId(), $start, $home, $away);
+                            $match->setLocation($location);
+                            $match->setTitle($draw->getTitle());
+                            $draw->addMatch($match);
                           }
                         }
                       }
