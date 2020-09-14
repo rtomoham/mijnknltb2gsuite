@@ -6,6 +6,7 @@ define('MAX_HEADER_TEXT', 28);
 define('MAX_HEADER_WIDTH', 40);
 
 define('STRING_GOOGLE_SHEET', 'Google Sheet');
+define('STRING_LINKS', 'links');
 define('STRING_MIJNKNLTB', 'mijnKNLTB');
 define('STRING_PLAYERS', 'players');
 define('STRING_BACKUP', 'backup');
@@ -34,6 +35,10 @@ function getHeaderDrivers() {
 
 function getHeaderGoogleSheet() {
   return getHeaderString(STRING_GOOGLE_SHEET);
+}
+
+function getHeaderLinks() {
+  return getHeaderString(STRING_LINKS);
 }
 
 function getHeaderMijnknltb() {

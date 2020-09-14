@@ -112,8 +112,9 @@ class GoogleApiBroker {
         getHeaderPlayers() .
         $matchDetails[0] .
         $match->getDescription() .
-        getHeaderGoogleSheet() .
-        $linkToGoogleSheet . "\n" .
+//        getHeaderGoogleSheet() .
+        '<a href="' . $linkToGoogleSheet . '">online spreadsheet</a>' .
+        "\n" . 
         "\nLast update: " . date('Y-m-d H:i') . 'h';
     } else {
       // This is a tournament match
