@@ -24,11 +24,7 @@ class Event {
       $this->setLocation($location);
       $this->setStart($start);
 
-      // set default duration of 6 hours
-      $end = new DateTime('@' . $start);
-      $end->setTimestamp($start);
-      $end->add(new DateInterval('PT' . $duration . 'H'));
-      $this->end = $end->getTimestamp();
+      $this->setDuration($duration);
   }
 
   // Start Getters and Setters
@@ -89,6 +85,13 @@ class Event {
 
   function setDescription($description) {
     $this->description = $description;
+  }
+
+  function setDuration($duration) {
+    $end = new DateTime('@' . $this->start);
+    $end->setTimestamp($this->start);
+    $end->add($duration);
+    $this->end = $end->getTimestamp();
   }
 
   function setEnd($date) {

@@ -16,8 +16,6 @@ class Settings {
   public const STRING_ON_MONTH = 'onMonth';
   public const STRING_ON_DAY_OF_WEEK = 'onDayOfWeek';
 
-  public const URL_MIJNKNLTB = 'https://mijnknltb.toernooi.nl';
-
   private $programName;
   protected $dataPath = '';
   private $programPath;

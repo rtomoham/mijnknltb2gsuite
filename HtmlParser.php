@@ -25,6 +25,86 @@ class HtmlParser {
     return self::$instance;
   }
 
+  function addMatches($html, $draw, $tournament) {
+    $this->domDoc->loadHTML($html);
+    libxml_clear_errors();
+
+    $tbodies = $this->domDoc->getElementsByTagName('tbody');
+    foreach ($tbodies as $tbody) {
+      $trs = $tbody->getElementsByTagName('tr');
+      foreach ($trs as $tr) {
+        $tdsParsed = 0;
+        $tds = $tr->getElementsByTagName('td');
+        if (15 <= $tds->count()) {
+          $start = $this->getItem($tds, 1);
+          $dateAndTime = explode(' ', $start);
+          if (3 <= sizeof($dateAndTime)) {
+            $start = $dateAndTime[1] . ' ' . $dateAndTime[2];
+          } else {
+            $start = $dateAndTime[1] . ' 00:00';
+          }
+          $format = "d-m-Y H:i";
+          $start = DateTime::createFromFormat($format, $start);
+          $start = $start->getTimeStamp();
+
+          $summary = $this->getItem($tds, 2);
+          $home = [];
+          $away = [];
+          if (17 == $tds->count()) {
+            $home[] = $this->getTournamentPlayer($tds->item(4));
+            $home[] = $this->getTournamentPlayer($tds->item(5));
+            $away[] = $this->getTournamentPlayer($tds->item(8));
+            $away[] = $this->getTournamentPlayer($tds->item(9));
+            $score = $this->getItem($tds, 10);
+            $duration = $this->getItem($tds, 14);
+            $location = $this->getItem($tds, 15);
+          } elseif (15 == $tds->count()) {
+            $home[] = $this->getTournamentPlayer($tds->item(4));
+            $away[] = $this->getTournamentPlayer($tds->item(7));
+            $score = $this->getItem($tds, 8);
+            $duration = $this->getItem($tds, 12);
+            $location = $this->getItem($tds, 13);
+          }
+
+          if (is_null($location)) {
+            $location = 'TBD';
+          }
+
+          $summary = 'toernooiwedstrijd';
+
+          if (0 < strlen($score)) {
+            $summary .= ' (uitslag: ' . $score . ')';
+          }
+
+          $match = new TournamentMatch(-1, $summary, $tournament->getId(), $start, $home, $away);
+          $match->setLocation($location);
+          $match->setTitle($draw->getTitle());
+
+          if (0 < strlen($duration)) {
+            $hoursAndMinutes = explode(':', $duration);
+            $duration = $hoursAndMinutes[0] * 60 + $hoursAndMinutes[1];
+            $duration = new DateInterval('PT' . $duration . 'M');
+            $match->setDuration($duration);
+          } else {
+            if (0 == strcmp('00:00', date('H:i', $start))) {
+              $summary .= ' (nog geen starttijd)';
+              $match->setSummary($summary);
+              $match->setDuration(new DateInterval('PT24H'));
+            }
+          }
+
+          $draw->addMatch($match);
+        }
+      }
+    }
+  }
+
+  function getItem($domList, $nr) {
+    $item = $domList->item($nr);
+    $item = $item->nodeValue;
+    return $this->cleanUpString($item);
+  }
+
   function getMatches($htmlString, $teamId) {
     /*
     * Pre:  $htmlString contains <a> tags containing league name first, then
@@ -166,11 +246,43 @@ class HtmlParser {
     return new TournamentPlayer($name, $url);
   }
 
-  function getTournaments($html) {
+  function getTournamentPlayerUrl($html, $tournament) {
     $this->domDoc->loadHTML($html);
     libxml_clear_errors();
 
-    $tournaments = [];
+    $h2s = $this->domDoc->getElementsByTagName('h2');
+    foreach ($h2s as $h2) {
+      $h2Class = $h2->getAttribute('class');
+      if (0 == strcmp('hgroup__heading truncate', $h2Class)) {
+        $name = $h2->nodeValue;
+        break;
+      }
+    }
+
+    if (!is_null($name)) {
+      $oLists = $this->domDoc->getElementsByTagName('ol');
+      foreach ($oLists as $ol) {
+        $olClass = $ol->getAttribute('class');
+        if (0 == strcmp('match-group', $olClass)) {
+          $links = $ol->getElementsByTagName('a');
+          foreach ($links as $link) {
+            $linkText = $link->nodeValue;
+            if (0 == strcmp($linkText, $name)) {
+              $url = $link->getAttribute('href');
+              if (strpos($url, $tournament->getId())) {
+                return $url;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function getTournament($html) {
+    $this->domDoc->loadHTML($html);
+    libxml_clear_errors();
+
     $links = $this->domDoc->getElementsByTagName('a');
     foreach ($links as $link) {
       $href = $link->getAttribute('href');
@@ -265,6 +377,127 @@ class HtmlParser {
                     }
                   }
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+    return $tournament;
+  }
+
+  function getTournaments($html) {
+    $this->domDoc->loadHTML($html);
+    libxml_clear_errors();
+
+    $tournaments = [];
+    $links = $this->domDoc->getElementsByTagName('a');
+    foreach ($links as $link) {
+      $href = $link->getAttribute('href');
+      $pos = strpos($href, 'sport/tournament?id=');
+      if ($pos) {
+        $title = $link->getAttribute('title');
+        if (0 < strlen($title)) {
+          // We found a tournament or league
+          if (false === strpos($title, 'Competitie')) {
+            // It is not a league, so must be a tournament
+            $posEqualSign = strpos($href, '=');
+            $id = substr(
+              $href,
+              $posEqualSign + 1,
+              strlen($href) - ($posEqualSign) + 1);
+            $tournament = new Tournament($id, $title);
+            $tournaments[] = $tournament;
+
+            // Now, let's add the draws for this tournament
+            foreach ($links as $link2) {
+              $href2 = $link2->getAttribute('href');
+              $pos2 = strpos($href2, $tournament->getId() . '&draw=');
+              if ($pos2) {
+                // Found a draw for this tournament
+                $posSecondEqualSign = strpos($href2, '=');
+                $posSecondEqualSign =
+                  strpos($href2, '=', $posSecondEqualSign + 1);
+                $drawId = substr(
+                  $href2,
+                  $posSecondEqualSign + 1,
+                  strlen($href2) - ($posSecondEqualSign) + 1);
+                $drawTitle = $link2->nodeValue;
+                $draw = new Draw($drawId, $drawTitle);
+                $tournament->addDraw($draw);
+
+/*
+                $oLists = $this->domDoc->getElementsByTagName('ol');
+                foreach ($oLists as $oList) {
+                  $oListId = $oList->getAttribute('id');
+                  $oListPos =
+                    strpos($oListId, $tournament->getId() . $draw->getId());
+                  if ($oListPos) {
+                    $oListItems = $oList->getElementsByTagName('li');
+                    foreach ($oListItems as $oListItem) {
+                      $oListItemClass = $oListItem->getAttribute('class');
+                      if (0 == strcmp($oListItemClass, 'match-group__item')) {
+                        $divs = $oListItem->getElementsByTagName('div');
+                        $divsParsed = 0;
+                        foreach ($divs as $div) {
+                          $divClass = $div->getAttribute('class');
+                          if (0 == strcmp($divClass, 'match__header-title-main')) {
+                            $summary = $div->nodeValue;
+                            $summary = $this->cleanUpString($summary);
+                            $divsParsed++;
+                          } elseif (0 == strcmp($divClass, 'match__header-aside')) {
+                            $duration = $div->nodeValue;
+                            $duration = $this->cleanUpString($duration);
+                            $divsParsed++;
+                          } elseif (0 == strcmp($divClass, 'match__body')) {
+                            $links = $div->getElementsByTagName('a');
+                            $home = [];
+                            $away = [];
+                            if (3 == $links->length) {
+                              $home[] = $this->getTournamentPlayer($links->item(0));
+                              $away[] = $this->getTournamentPlayer($links->item(1));
+                            } elseif (5 == $links->length) {
+                              $home[] = $this->getTournamentPlayer($links->item(0));
+                              $home[] = $this->getTournamentPlayer($links->item(1));
+                              $away[] = $this->getTournamentPlayer($links->item(2));
+                              $away[] = $this->getTournamentPlayer($links->item(3));
+                            }
+                            $divsParsed++;
+                          } elseif (0 == strcmp($divClass, 'match__footer')) {
+                            $spans = $div->getElementsByTagName('span');
+                            $span = $spans->item(1);
+                            $start = $this->cleanUpString($span->nodeValue);
+                            if (strpos($start, 'om')) {
+                              // Start includes a time, so match has not been played yet
+                              $dateAndTime = explode(' ', $start);
+                              $start = $dateAndTime[1] . ' ' . $dateAndTime[3];
+                              $format = "d-m-Y H:i";
+                              $start = DateTime::createFromFormat($format, $start);
+                              $start = $start->getTimeStamp();
+
+                              $span = $spans->item(3);
+                              $location = $this->cleanUpString($span->nodeValue);
+                              $divsParsed++;
+                            } else {
+                              // Start does not include a time, so match has
+                              // already been played
+
+
+                              // DO NOT INCREMENT $divsParsed in this section!
+                            }
+                          }
+                          if (2 < $divsParsed) {
+                            $match = new TournamentMatch(-1, $summary, $tournament->getId(), $start, $home, $away);
+                            $match->setLocation($location);
+                            $match->setTitle($draw->getTitle());
+                            $draw->addMatch($match);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+                */
               }
             }
           }

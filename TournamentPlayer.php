@@ -9,7 +9,7 @@ class TournamentPlayer {
 
   function __construct($name, $url) {
     $this->name = $name;
-    $this->url = Settings::URL_MIJNKNLTB . $url;
+    $this->url = Mijnknltb2GSuiteSettings::URL_MIJNKNLTB . $url;
   }
 
   function getUrl() {

@@ -24,6 +24,8 @@ class Mijnknltb2GSuiteSettings extends Settings {
   private const KEYWORD_MIJNKNLTB_ACCOUNT = 'mijnknltb_account';
   private const FILENAME_COOKIE = 'cookies.txt';
 
+  public const URL_MIJNKNLTB = 'https://mijnknltb.toernooi.nl';
+
   private $cron;       // [ 'onMinute' => 'x', 'onHour' => 'x',
                        //   'onDayOfMonth' => 'x', 'onMonth' => 'x',
                        //   'onDayOfWeek' => 'x' ]

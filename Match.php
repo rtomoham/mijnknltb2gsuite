@@ -34,7 +34,7 @@ class Match extends Event {
   function __construct(
     $matchId, $summary, $description, $additionalId, $start, $duration, $home, $away) {
 
-    parent::__construct($matchId, $summary, NULL, NULL, $start, $duration);
+    parent::__construct($matchId, $summary, NULL, NULL, $start, new DateInterval('PT' . $duration . 'H'));
     $this->additionalId = $additionalId;
     $this->home = $home;
     $this->away = $away;
@@ -146,6 +146,10 @@ class Match extends Event {
 
   function setScoreHome($score) {
     $this->scoreHome = $score;
+  }
+
+  function setSummary($summary) {
+    $this->summary = $summary;
   }
 
   function setSheetData($sheetData) {

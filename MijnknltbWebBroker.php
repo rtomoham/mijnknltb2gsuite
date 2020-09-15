@@ -204,7 +204,19 @@ class MijnknltbWebBroker {
   }
 
   function getTournaments($html) {
-    return $this->htmlParser->getTournaments($html);
+    $tournaments = $this->htmlParser->getTournaments($html);
+    foreach ($tournaments as $tournament) {
+      $draws = $tournament->getDraws();
+      foreach ($draws as $draw) {
+        $url =
+          Mijnknltb2GSuiteSettings::URL_MIJNKNLTB .
+          $this->htmlParser->getTournamentPlayerUrl($html, $tournament);
+        $this->makeHttpRequest($url, false, NULL);
+
+        $this->htmlParser->addMatches($this->response, $draw, $tournament);
+      }
+    }
+    return $tournaments;
   }
 
 } ?>
