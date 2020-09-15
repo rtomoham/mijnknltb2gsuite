@@ -113,8 +113,8 @@ class GoogleApiBroker {
         $matchDetails[0] .
         $match->getDescription() .
 //        getHeaderGoogleSheet() .
-        '<a href="' . $linkToGoogleSheet . '">online spreadsheet</a>' .
-        "\n" . 
+        '- <a href="' . $linkToGoogleSheet . '">online spreadsheet</a>' .
+        "\n" .
         "\nLast update: " . date('Y-m-d H:i') . 'h';
     } else {
       // This is a tournament match
