@@ -102,23 +102,19 @@ function printMessage($message) {
 
 function printString($string) {
   $stringLength = strlen($string);
-  $i = 0; $j = MAX_MESSAGE_WIDTH;
-  while ($j < $stringLength) {
-    echo '* ';
+  echo '* ';
+  if ($stringLength > MAX_MESSAGE_WIDTH) {
     echo str_pad(
-      substr($string, $i, $j),
+      substr($string, 0, MAX_MESSAGE_WIDTH),
       MAX_MESSAGE_WIDTH,
       ' ',
       STR_PAD_BOTH
     );
     echo ' *' . "\n";
-    $i = $j;
-    $j += MAX_MESSAGE_WIDTH;
-  }
-  if ($j > $stringLength) {
-    echo '* ';
+    printString(substr($string, MAX_MESSAGE_WIDTH, $stringLength-MAX_MESSAGE_WIDTH));
+  } else {
     echo str_pad(
-      substr($string, $i, $j),
+      $string,
       MAX_MESSAGE_WIDTH,
       ' ',
       STR_PAD_BOTH
