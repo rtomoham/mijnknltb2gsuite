@@ -112,8 +112,11 @@ class GoogleApiBroker {
         getHeaderPlayers() .
         $matchDetails[0] .
         $match->getDescription() .
-//        getHeaderGoogleSheet() .
-        '- <a href="' . $linkToGoogleSheet . '">online spreadsheet</a>' .
+        "\n" .
+        getHeaderLinks() .
+        ' - <a href="' . $match->getUrl() . '">mijnknltb</a>' .
+        "\n" .
+        ' - <a href="' . $linkToGoogleSheet . '">online spreadsheet</a>' .
         "\n" .
         "\nLast update: " . date('Y-m-d H:i') . 'h';
     } else {

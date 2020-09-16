@@ -73,10 +73,7 @@ class Match extends Event {
         }
     return
       self::STRING_SURFACE . $this->surface .
-        $alertString ."\n" .
-        getHeaderLinks() .
-        '- <a href="' . $this->url . '">mijnknltb</a>' .
-        "\n";
+        $alertString ."\n";
   }
 
   function getEventId() {
