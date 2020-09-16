@@ -556,7 +556,21 @@ class HtmlParser {
           foreach ($svgs as $svg) {
             $class = $svg->getAttribute('class');
             if (0 == strcmp($class, 'icon-court nav-link__prefix')) {
-              $match->setSurface($this->cleanupString($span->nodeValue));
+              $surface = $span->nodeValue;
+              $surface = $this->cleanupString($surface);
+              $surfaces = explode(' ', $surface);
+              $surface = '';
+              foreach ($surfaces as $surface1) {
+                if (0 < strlen($surface1)) {
+                  $surface .= $surface1 . ', ';
+                }
+              }
+              if (2 < strlen($surface)) {
+                $surface = substr($surface, 0, -2);
+              } else {
+                $surface = 'onbekend';
+              }
+              $match->setSurface($surface);
               break;
             }
           }

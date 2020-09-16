@@ -27,7 +27,7 @@ class Player {
 
   function toString() {
     return
-      "$this->name ($this->ratingSingles, $this->ratingDoubles)";
+      "$this->name ($this->ratingSingles|$this->ratingDoubles)";
   }
 
 } ?>

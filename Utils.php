@@ -8,7 +8,8 @@ define('MAX_HEADER_WIDTH', 40);
 define('STRING_GOOGLE_SHEET', 'Google Sheet');
 define('STRING_LINKS', 'links');
 define('STRING_MIJNKNLTB', 'mijnKNLTB');
-define('STRING_PLAYERS', 'players');
+define('STRING_SURFACE', 'ondergrond');
+define('STRING_PLAYERS', 'players (sr|dr)');
 define('STRING_BACKUP', 'backup');
 define('STRING_COMMENTS', 'comments');
 define('STRING_DRIVERS', 'driver(s)');
@@ -55,6 +56,10 @@ function getHeaderSeparator() {
 
 function getHeaderSnacks() {
   return getHeaderString(STRING_SNACKS);
+}
+
+function getHeaderSurface() {
+  return getHeaderString(STRING_SURFACE);
 }
 
 function printBasicMessage($message) {

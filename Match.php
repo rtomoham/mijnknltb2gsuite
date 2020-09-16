@@ -4,7 +4,7 @@ require_once('Mijnknltb2GSuiteSettings.php');
 
 class Match extends Event {
   private const STRING_SURFACE = "\nOndergrond: ";
-  private const STRING_ALERT = '  ==> LET OP: ';
+  private const STRING_ALERT = '==> LET OP: ';
   protected const STRING_URL_PREFIX = 'https://mijnknltb.toernooi.nl';
   private const STRING_MIJNKNLTB = 'Mijnknltb: ';
 
@@ -61,19 +61,24 @@ class Match extends Event {
     return $this->additionalName;
   }
 
+  function getAlert() {
+    if (is_null($this->alert)) {
+      return '';
+    } else {
+      return "\n" . self::STRING_ALERT . $this->alert;
+    }
+  }
+
   function getAway() {
     return $this->away;
   }
 
   function getDescription() {
-        if (is_null($this->alert)) {
-          $alertString = '';
-        } else {
-          $alertString = "\n" . self::STRING_ALERT . $this->alert;
-        }
+    $description = $this->getAlert();
+
     return
       self::STRING_SURFACE . $this->surface .
-        $alertString ."\n";
+        $description ."\n";
   }
 
   function getEventId() {
@@ -106,6 +111,10 @@ class Match extends Event {
       $score = ' (' . $this->getScore() . ')';
     }
     return parent::getSummary() . $this->getScore() . ' [' . $this->additionalName . ']';
+  }
+
+  function getSurface() {
+    return $this->surface;
   }
 
   function getUrl() {

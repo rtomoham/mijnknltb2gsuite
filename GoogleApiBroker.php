@@ -111,7 +111,11 @@ class GoogleApiBroker {
       $description .=
         getHeaderPlayers() .
         $matchDetails[0] .
-        $match->getDescription() .
+//        $match->getDescription() .
+        getHeaderSurface() .
+        '   ' . $match->getSurface() .
+        "\n" .
+        $match->getAlert() .
         "\n" .
         getHeaderLinks() .
         ' - <a href="' . $match->getUrl() . '">mijnknltb</a>' .
