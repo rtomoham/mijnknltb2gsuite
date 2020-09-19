@@ -95,6 +95,8 @@ class HtmlParser {
           }
 
           if (0 == strcmp($drawTitle, $draw->getTitle())) {
+            $date = date('Y-m-d H:i', $start);
+            printBasicMessage("Found tourney match starting at $date");
             $draw->addMatch($match);
           }
         }
@@ -155,7 +157,7 @@ class HtmlParser {
         $timeElement = $match->getElementsByTagName('time');
         $timeElement = $timeElement[0];
         $dateTime = $timeElement->getAttribute('datetime');
-        printBasicMessage("Found match starting at $dateTime");
+        printBasicMessage("Found league match starting at $dateTime");
         $start = strtotime($dateTime);
         $divs = $match->getElementsByTagName('div');
         foreach ($divs as $div) {
