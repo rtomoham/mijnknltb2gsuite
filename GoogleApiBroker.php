@@ -111,7 +111,6 @@ class GoogleApiBroker {
       $description .=
         getHeaderPlayers() .
         $matchDetails[0] .
-//        $match->getDescription() .
         getHeaderSurface() .
         '   ' . $match->getSurface() .
         "\n" .
@@ -120,14 +119,14 @@ class GoogleApiBroker {
         getHeaderLinks() .
         ' - <a href="' . $match->getUrl() . '">mijnknltb</a>' .
         "\n" .
-        ' - <a href="' . $linkToGoogleSheet . '">online spreadsheet</a>' .
-        "\n" .
-        "\nLast update: " . date('Y-m-d H:i') . 'h';
+        ' - <a href="' . $linkToGoogleSheet . '">online spreadsheet</a>';
     } else {
       // This is a tournament match
       $summary = $match->getSummary();
       $description = $match->getDescription();
     }
+
+    $description .= "\n\nLast update: " . date('Y-m-d H:i') . 'h';
     $matchArray = array(
       'summary' => $summary,
       'location' => $match->getLocation(),
