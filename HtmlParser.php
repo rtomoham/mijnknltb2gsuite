@@ -91,8 +91,10 @@ class HtmlParser {
             $match->setDuration($duration);
           } else {
             if (0 == strcmp('00:00', date('H:i', $start))) {
-              $summary .= ' (nog geen starttijd)';
-              $match->setSummary($summary);
+              if (0 == strlen($score)) {
+                $summary .= ' (nog geen starttijd)';
+                $match->setSummary($summary);
+              }
               $match->setDuration(new DateInterval('PT24H'));
             }
           }
