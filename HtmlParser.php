@@ -37,6 +37,7 @@ class HtmlParser {
         $tds = $tr->getElementsByTagName('td');
         if (15 <= $tds->count()) {
           $start = $this->getItem($tds, 1);
+          $drawTitle = $this->getItem($tds, 2);
           $dateAndTime = explode(' ', $start);
           if (3 <= sizeof($dateAndTime)) {
             $start = $dateAndTime[1] . ' ' . $dateAndTime[2];
@@ -93,7 +94,9 @@ class HtmlParser {
             }
           }
 
-          $draw->addMatch($match);
+          if (0 == strcmp($drawTitle, $draw->getTitle())) {
+            $draw->addMatch($match);
+          }
         }
       }
     }
@@ -407,7 +410,9 @@ class HtmlParser {
               $posEqualSign + 1,
               strlen($href) - ($posEqualSign) + 1);
             $tournament = new Tournament($id, $title);
-            $tournaments[] = $tournament;
+            if (!array_key_exists($id, $tournaments)) {
+              $tournaments[$id] = $tournament;
+            }
 
             // Now, let's add the draws for this tournament
             foreach ($links as $link2) {
@@ -425,79 +430,6 @@ class HtmlParser {
                 $drawTitle = $link2->nodeValue;
                 $draw = new Draw($drawId, $drawTitle);
                 $tournament->addDraw($draw);
-
-/*
-                $oLists = $this->domDoc->getElementsByTagName('ol');
-                foreach ($oLists as $oList) {
-                  $oListId = $oList->getAttribute('id');
-                  $oListPos =
-                    strpos($oListId, $tournament->getId() . $draw->getId());
-                  if ($oListPos) {
-                    $oListItems = $oList->getElementsByTagName('li');
-                    foreach ($oListItems as $oListItem) {
-                      $oListItemClass = $oListItem->getAttribute('class');
-                      if (0 == strcmp($oListItemClass, 'match-group__item')) {
-                        $divs = $oListItem->getElementsByTagName('div');
-                        $divsParsed = 0;
-                        foreach ($divs as $div) {
-                          $divClass = $div->getAttribute('class');
-                          if (0 == strcmp($divClass, 'match__header-title-main')) {
-                            $summary = $div->nodeValue;
-                            $summary = $this->cleanUpString($summary);
-                            $divsParsed++;
-                          } elseif (0 == strcmp($divClass, 'match__header-aside')) {
-                            $duration = $div->nodeValue;
-                            $duration = $this->cleanUpString($duration);
-                            $divsParsed++;
-                          } elseif (0 == strcmp($divClass, 'match__body')) {
-                            $links = $div->getElementsByTagName('a');
-                            $home = [];
-                            $away = [];
-                            if (3 == $links->length) {
-                              $home[] = $this->getTournamentPlayer($links->item(0));
-                              $away[] = $this->getTournamentPlayer($links->item(1));
-                            } elseif (5 == $links->length) {
-                              $home[] = $this->getTournamentPlayer($links->item(0));
-                              $home[] = $this->getTournamentPlayer($links->item(1));
-                              $away[] = $this->getTournamentPlayer($links->item(2));
-                              $away[] = $this->getTournamentPlayer($links->item(3));
-                            }
-                            $divsParsed++;
-                          } elseif (0 == strcmp($divClass, 'match__footer')) {
-                            $spans = $div->getElementsByTagName('span');
-                            $span = $spans->item(1);
-                            $start = $this->cleanUpString($span->nodeValue);
-                            if (strpos($start, 'om')) {
-                              // Start includes a time, so match has not been played yet
-                              $dateAndTime = explode(' ', $start);
-                              $start = $dateAndTime[1] . ' ' . $dateAndTime[3];
-                              $format = "d-m-Y H:i";
-                              $start = DateTime::createFromFormat($format, $start);
-                              $start = $start->getTimeStamp();
-
-                              $span = $spans->item(3);
-                              $location = $this->cleanUpString($span->nodeValue);
-                              $divsParsed++;
-                            } else {
-                              // Start does not include a time, so match has
-                              // already been played
-
-
-                              // DO NOT INCREMENT $divsParsed in this section!
-                            }
-                          }
-                          if (2 < $divsParsed) {
-                            $match = new TournamentMatch(-1, $summary, $tournament->getId(), $start, $home, $away);
-                            $match->setLocation($location);
-                            $match->setTitle($draw->getTitle());
-                            $draw->addMatch($match);
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-                */
               }
             }
           }
