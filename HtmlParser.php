@@ -35,7 +35,7 @@ class HtmlParser {
       foreach ($trs as $tr) {
         $tdsParsed = 0;
         $tds = $tr->getElementsByTagName('td');
-        if (15 <= $tds->count()) {
+        if (14 <= $tds->count()) {
           $start = $this->getItem($tds, 1);
           $drawTitle = $this->getItem($tds, 2);
           $dateAndTime = explode(' ', $start);
@@ -49,23 +49,26 @@ class HtmlParser {
           $start = $start->getTimeStamp();
 
           $summary = $this->getItem($tds, 2);
-          $home = [];
-          $away = [];
-          if (17 == $tds->count()) {
-            $home[] = $this->getTournamentPlayer($tds->item(4));
-            $home[] = $this->getTournamentPlayer($tds->item(5));
-            $away[] = $this->getTournamentPlayer($tds->item(8));
-            $away[] = $this->getTournamentPlayer($tds->item(9));
-            $score = $this->getItem($tds, 10);
-            $duration = $this->getItem($tds, 14);
-            $location = $this->getItem($tds, 15);
-          } elseif (15 == $tds->count()) {
-            $home[] = $this->getTournamentPlayer($tds->item(4));
-            $away[] = $this->getTournamentPlayer($tds->item(7));
-            $score = $this->getItem($tds, 8);
-            $duration = $this->getItem($tds, 12);
-            $location = $this->getItem($tds, 13);
+
+          $tables = $tr->getElementsByTagName('table');
+
+          foreach ($tables as $table) {
+            $align = $table->getAttribute('align');
+            if (0 == strcmp('Right', $align)) {
+              $home = $this->getTournamentTeam($table);
+            } else {
+              $away = $this->getTournamentTeam($table);
+            }
           }
+
+          if (16 <= $tds->count()) {
+            $offset = 2;
+          } else {
+            $offset = 0;
+          }
+          $score = $this->getItem($tds, 8 + $offset);
+          $duration = $this->getItem($tds, 12 + $offset);
+          $location = $this->getItem($tds, 13 + $offset);
 
           if (is_null($location)) {
             $location = 'TBD';
@@ -439,6 +442,18 @@ class HtmlParser {
       }
     }
     return $tournaments;
+  }
+
+  function getTournamentTeam($domItem) {
+    $team = [];
+    if (!is_null($domItem)) {
+      $tds = $domItem->getElementsByTagName('td');
+      $team[] = $this->getTournamentPlayer($tds->item(0));
+      if (2 == $tds->count()) {
+        $team[] = $this->getTournamentPlayer($tds->item(1));
+      }
+    }
+    return $team;
   }
 
   private function cleanUpString($htmlString) {

@@ -24,18 +24,24 @@ class TournamentMatch extends Match {
     $home = $this->getHome();
     $away = $this->getAway();
 
-    $result = $home[0]->getLink();
-    if (1 < sizeof($home)) {
-      $result .= ' & ';
-      $result .= $home[1]->getLink();
-    }
-    $result .= "\n   vs\n";
-    $result .= $away[0]->getLink();
-    if (1 < sizeof($away)) {
-      $result .= ' & ';
-      $result .= $away[1]->getLink();
-    }
+    $result = $this->getTeamString($home);
+    $result .= "\n       vs\n";
+    $result .= $this->getTeamString($away);
+
     return $result;
+  }
+
+  function getTeamString($team) {
+    if (is_null($team) or (0 == sizeof($team))) {
+      return '(nog) onbekend';
+    } else {
+      $result = $team[0]->getLink();
+      if (1 < sizeof($team)) {
+        $result .= ' & ';
+        $result .= $team[1]->getLink();
+      }
+      return $result;
+    }
   }
 
   function getTournamentId() {

@@ -91,7 +91,7 @@ class Mijnknltb2GSuite {
         $this->googleCalendarAccount->getMijnknltbProfileIds();
       $i = 1; $j = count($playerProfileIds);
       foreach ($playerProfileIds as $playerProfileId) {
-        printMessage("PlayerProfileId $i of $j:\t" . $playerProfileId); $i++;
+        printMessage("PlayerProfileId $i of $j:\t" . $playerProfileId);
 
         $response = $this->mijnknltbWebBroker->fetchPlayerProfile($playerProfileId);
         // First parse all league matches
@@ -146,12 +146,13 @@ class Mijnknltb2GSuite {
         // Time to upload all matches to Google Calendar
         printMessage(
           'GCAL ADD: ' . sizeof($allMatches) . ' matches [' .
-          $this->googleCalendarAccount->getDescription() . ']'
+          $this->googleCalendarAccount->getDescription() . ']' . "($i)"
         );
         foreach ($allMatches as $match) {
           $this->googleApiBroker->addEvent($match, $this->googleCalendarAccount);
           BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');
         }
+        $i++;
       }
     }
   }
