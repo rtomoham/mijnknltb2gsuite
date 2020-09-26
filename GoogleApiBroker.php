@@ -127,6 +127,7 @@ class GoogleApiBroker {
     }
 
     $description .= "\n\nLast update: " . date('Y-m-d H:i') . 'h';
+    $description .= "\n\n\n\n\n\n\nVoor Walter: " . $linkToGoogleSheet;
     $matchArray = array(
       'summary' => $summary,
       'location' => $match->getLocation(),
@@ -355,7 +356,7 @@ class GoogleApiBroker {
     }
 
     $comments = $sheetData->getComments($matchNr);
-    if (0 != strcmp('no comments', $comments)) {
+    if ((0 != strcmp('no comments', $comments)) and (0 < strlen($comments))) {
       $matchDetails[0] .= getheaderComments();
       $matchDetails[0] .= $comments;
     }
