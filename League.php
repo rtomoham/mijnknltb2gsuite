@@ -15,6 +15,10 @@ class League {
     $leagueMatches[] = $leagueMatch;
   }
 
+  function getHash() {
+    return hash('md5', $this->toJson());
+  }
+
   function getLeagueId() {
     return $this->leagueId;
   }
@@ -41,6 +45,10 @@ class League {
 
   function setMatches($leagueMatches) {
     $this->leagueMatches = $leagueMatches;
+  }
+
+  function toJson() {
+    return json_encode($this);
   }
 
 } ?>

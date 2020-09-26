@@ -86,7 +86,7 @@ class Mijnknltb2GSuite {
       );
       $this->clearGoogleCalendar();
 
-      $leaguesAndTeams = [];
+      $leagueAndTeamIDs = [];
       $playerProfileIds =
         $this->googleCalendarAccount->getMijnknltbProfileIds();
       $i = 1; $j = count($playerProfileIds);
@@ -95,8 +95,8 @@ class Mijnknltb2GSuite {
 
         $response = $this->mijnknltbWebBroker->fetchPlayerProfile($playerProfileId);
         // First parse all league matches
-        $leaguesAndTeams =
-          $this->mijnknltbWebBroker->getLeaguesAndTeams($response);
+        $leagueAndTeamIDs =
+          $this->mijnknltbWebBroker->getLeagueAndTeamIDs($response);
         // Next, parse all tournament matches
         $tournaments =
           $this->mijnknltbWebBroker->getTournaments($response);
@@ -104,9 +104,9 @@ class Mijnknltb2GSuite {
         // Now, let's put all the matches in an array
         $allMatches = [];
         // First, the league matches
-        foreach ($leaguesAndTeams as $leagueAndTeam) {
-          $leagueId = $leagueAndTeam[0];
-          $teamId = $leagueAndTeam[1];
+        foreach ($leagueAndTeamIDs as $leagueAndTeamID) {
+          $leagueId = $leagueAndTeamID[0];
+          $teamId = $leagueAndTeamID[1];
           $league = new League($leagueId, $teamId);
 
           $matches = $this->getMatches(
@@ -115,6 +115,7 @@ class Mijnknltb2GSuite {
             $this->leaguesFilters
           );
           $league->setMatches($matches);
+          $leagueHash = $league->getHash();
 
           foreach ($matches as $matchNr=>$match) {
             if ($match->isLeagueMatch()) {
@@ -123,6 +124,8 @@ class Mijnknltb2GSuite {
                 BackoffTimer::getInstance()->sleep('MK2GS::refreshGoogleCalendar::addEvent');
               }
               $match->setSheetData($sheetData);
+              $match->setMatchNumber($matchNr);
+              $match->setLeagueHash($leagueHash);
             }
           }
           $allMatches = array_merge($allMatches, $matches);

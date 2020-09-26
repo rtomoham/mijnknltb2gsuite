@@ -133,13 +133,22 @@ class GoogleApiBroker {
       'description' => $description,
       'start' => $match->getStart(),
       'end' => $match->getEnd(),
+      // I will store the hash of the mijnknltb data (league and team data)
+      // in iCalUID, so I can update only those events that match this
+//      'iCalUID' => $match->getLeagueHash()
+      'source' => [
+        'url' => 'http://mijnknltb.toernooi.nl',
+        'title' => $match->getLeagueHash()
+        ]
     );
 
     printBasicMessage(
       'GCAL ADD: ' .
       '"' . $match->getBasicSummary() . '"' .
       ' at ' .
-      $match->getStartRFC3339() );
+      $match->getStartRFC3339() .
+      ' ' . $match->getCalendarId()
+    );
 
     $event = new Google_Service_Calendar_Event($matchArray);
 
@@ -207,8 +216,11 @@ class GoogleApiBroker {
         $this->calendarService->getClient()->getClientId(),
         $creator->getId())
       ) {
-        printBasicMessage('GCAL DEL: "' .
-        $event->getSummary() . '"');
+        printBasicMessage(
+          'GCAL DEL: "' .
+          $event->getSummary() . '"' .
+          $event->getSource()->getTitle()
+        );
         $this->calendarService->events->delete(
           $googleCalendarId, $event->getId()
         );

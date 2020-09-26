@@ -175,8 +175,8 @@ class MijnknltbWebBroker {
     }
   }
 
-  function getLeaguesAndTeams($html) {
-    return $this->htmlParser->getLeaguesAndTeams($html);
+  function getLeagueAndTeamIDs($html) {
+    return $this->htmlParser->getLeagueAndTeamIDs($html);
   }
 
   function getMatches($leagueId, $teamId, $filters) {

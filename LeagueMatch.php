@@ -9,8 +9,9 @@ class LeagueMatch extends Match {
 
   private $teamId;
   private $players;
-  private $nr;
+  private $number;
   private $shortLeagueName;
+  private $leagueHash;
 
   function __construct($matchId, $summary, $leagueName, $leagueId, $start, $home, $away) {
     parent::__construct(
@@ -24,6 +25,14 @@ class LeagueMatch extends Match {
       parent::STRING_URL_PREFIX .
       self::STRING_URL_INFIX_LEAGUE . $leagueId .
       self::STRING_URL_INFIX_TEAM . $matchId;
+  }
+
+  function getCalendarId() {
+    return $this->getLeagueHash() . '-' . $this->number;
+  }
+
+  function getLeagueHash() {
+    return $this->leagueHash;
   }
 
   function getLeagueId() {
@@ -70,6 +79,10 @@ class LeagueMatch extends Match {
 
   function setMatchNumber($number) {
     $this->number = $number;
+  }
+
+  function setLeagueHash($hash) {
+    $this->leagueHash = $hash;
   }
 
   function setPlayers($players) {

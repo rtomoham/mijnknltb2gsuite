@@ -195,21 +195,21 @@ class HtmlParser {
     return $matches;
   }
 
-  function getLeaguesAndTeams($htmlString) {
+  function getLeagueAndTeamIDs($htmlString) {
     $this->domDoc->loadHTML($htmlString);
     libxml_clear_errors();
 
-    $leaguesAndTeams = array();
+    $leagueAndTeamIDs = array();
     $links = $this->domDoc->getElementsByTagName("a");
     foreach ($links as $item) {
       $href = $item->getAttribute("href");
 
       if (strpos($href, 'league') and strpos($href, 'team')) {
         $list = explode("/", $href);
-        $leaguesAndTeams[] = array($list[2], $list[4]);
+        $leagueAndTeamIDs[] = array($list[2], $list[4]);
       }
     }
-    return $leaguesAndTeams;
+    return $leagueAndTeamIDs;
   }
 
   function getPlayerProfileId($htmlString, $keywordPlayerProfile) {
