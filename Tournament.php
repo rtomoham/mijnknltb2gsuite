@@ -23,6 +23,10 @@ class Tournament {
     return $this->draws;
   }
 
+  function getHash() {
+    return hash('md5', $this->toJson());
+  }
+
   function getId() {
     return $this->id;
   }
@@ -33,6 +37,10 @@ class Tournament {
 
   function addDraw($draw) {
     $this->draws[] = $draw;
+  }
+
+  function toJson() {
+    return json_encode($this);
   }
 
 }

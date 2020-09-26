@@ -25,6 +25,9 @@ class Match extends Event {
 
   private $sheetData;
 
+  // Either a hash of the league or the tournament this match belongs to
+  private $hash;
+
   /*
   * Overrides and overloads the parent constructor, by taking $matchId and
   * an additional ID ($leagueId or tournamentId) to identify the exact
@@ -86,6 +89,10 @@ class Match extends Event {
       $this->additionalId . '.' . $this->id;
   }
 
+  function getHash() {
+    return $this->hash;
+  }
+
   function getHome() {
     return $this->home;
   }
@@ -141,6 +148,10 @@ class Match extends Event {
     $this->alert = $alert;
   }
 
+  function setHash($hash) {
+    $this->hash = $hash;
+  }
+
   function setScore($scoreHome, $scoreAway) {
     $this->setScoreHome($scoreHome);
     $this->setScoreAway($scoreAway);
@@ -164,6 +175,10 @@ class Match extends Event {
 
   function setSurface($surface) {
     $this->surface = $surface;
+  }
+
+  function toJson() {
+    return json_encode($this);
   }
 
   function toString() {

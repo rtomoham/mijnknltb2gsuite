@@ -11,7 +11,6 @@ class LeagueMatch extends Match {
   private $players;
   private $number;
   private $shortLeagueName;
-  private $leagueHash;
 
   function __construct($matchId, $summary, $leagueName, $leagueId, $start, $home, $away) {
     parent::__construct(
@@ -32,7 +31,7 @@ class LeagueMatch extends Match {
   }
 
   function getLeagueHash() {
-    return $this->leagueHash;
+    return $this->getHash();
   }
 
   function getLeagueId() {
@@ -82,7 +81,7 @@ class LeagueMatch extends Match {
   }
 
   function setLeagueHash($hash) {
-    $this->leagueHash = $hash;
+    $this->setHash($hash);
   }
 
   function setPlayers($players) {

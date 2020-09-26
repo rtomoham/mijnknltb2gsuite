@@ -134,11 +134,13 @@ class Mijnknltb2GSuite {
         // Now we add all the tournament matches, i.e, official knltb tournaments
         foreach ($tournaments as $tournament) {
           $draws = $tournament->getDraws();
+          $tournamentHash = $tournament->getHash();
           if (0 < sizeof($draws)) {
             foreach ($tournament->getDraws() as $draw) {
               $matches = $draw->getMatches();
               if (0 < sizeof($matches)) {
                 foreach ($draw->getMatches() as $match) {
+                  $match->setTournamentHash($tournamentHash);
                   $allMatches[] = $match;
                 }
               }

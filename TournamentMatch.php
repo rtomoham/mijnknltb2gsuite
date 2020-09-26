@@ -7,8 +7,6 @@ class TournamentMatch extends Match {
   private const STRING_URL_INFIX_TEAM = '/team-match/';
   private const DEFAULT_DURATION = '2';
 
-//  private $tournamentName;
-
   function __construct($matchId, $summary, $tournamentId, $start, $home, $away) {
     parent::__construct(
       $matchId, $summary, NULL, $tournamentId, $start, self::DEFAULT_DURATION, $home, $away);
@@ -44,6 +42,10 @@ class TournamentMatch extends Match {
     }
   }
 
+  function getTournamentHash() {
+    return $this->getHash();
+  }
+
   function getTournamentId() {
     return $this->$leagueOrTournamentId;
   }
@@ -58,6 +60,10 @@ class TournamentMatch extends Match {
 
   function setTitle($name) {
     parent::setAdditionalName($name);
+  }
+
+  function setTournamentHash($hash) {
+    $this->setHash($hash);
   }
 
   function setTournamentName($tournamentName) {

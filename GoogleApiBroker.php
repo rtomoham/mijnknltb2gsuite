@@ -134,11 +134,10 @@ class GoogleApiBroker {
       'start' => $match->getStart(),
       'end' => $match->getEnd(),
       // I will store the hash of the mijnknltb data (league and team data)
-      // in iCalUID, so I can update only those events that match this
-//      'iCalUID' => $match->getLeagueHash()
+      // in source->title, so I can update only those events that match this
       'source' => [
         'url' => 'http://mijnknltb.toernooi.nl',
-        'title' => $match->getLeagueHash()
+        'title' => $match->getHash()
         ]
     );
 
@@ -146,8 +145,7 @@ class GoogleApiBroker {
       'GCAL ADD: ' .
       '"' . $match->getBasicSummary() . '"' .
       ' at ' .
-      $match->getStartRFC3339() .
-      ' ' . $match->getCalendarId()
+      $match->getStartRFC3339()
     );
 
     $event = new Google_Service_Calendar_Event($matchArray);
