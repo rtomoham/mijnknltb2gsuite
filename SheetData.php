@@ -10,11 +10,12 @@ class SheetData {
   private $backups = [];
   private $drivers = [];
   private $snacks = [];
+  private $mijnknltbHash;
 
   function __construct($fileId, $data) {
 
     $this->fileId = $fileId;
-    
+
     for ($i = 0; 10 > $i; $i++) {
       $this->selections[$i] = [];
       $this->backups[$i] = [];
@@ -86,6 +87,14 @@ class SheetData {
 
   function getFileId() {
     return $this->fileId;
+  }
+
+  function getMijnknltbHash() {
+    return $this->mijnknltbHash;
+  }
+
+  function setMijnknltbHash($hash) {
+    $this->mijnknltbHash = $hash;
   }
 
   function toString() {

@@ -126,6 +126,13 @@ class Mijnknltb2GSuite {
               $match->setSheetData($sheetData);
               $match->setMatchNumber($matchNr);
               $match->setLeagueHash($leagueHash);
+              $bool = ($sheetData->getMijnknltbHash() == $leagueHash);
+              printBasicMessage($sheetData->getMijnknltbHash() . ' ' . $leagueHash);
+              if ($bool) {
+                printBasicMessage('BOOL: true');
+              } else {
+                printBasicMessage('BOOL: false');
+              }
             }
           }
           $allMatches = array_merge($allMatches, $matches);

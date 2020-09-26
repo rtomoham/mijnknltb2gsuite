@@ -168,6 +168,7 @@ class GoogleApiBroker {
       $league->getLeagueId() . '.' .
       $league->getTeamId();
     $range = 'A8:AE20';
+    $range2 = 'Lists!B6';
 
     if (!array_key_exists($filename, $this->files)) {
       $newFile = $this->copyTemplate($league, $filename);
@@ -179,7 +180,18 @@ class GoogleApiBroker {
         $this->files[$filename],
         $range
       )->getValues();
-      return new SheetData($this->files[$filename], $data);
+      $sheetData = new SheetData($this->files[$filename], $data);
+
+      $hash = $this->sheetsService->spreadsheets_values->get(
+        $this->files[$filename],
+        $range2
+      )->getValues();
+      if (!is_null($hash)) {
+        $hash = $hash[0][0];
+        $sheetData->setMijnknltbHash($hash);
+      }
+
+      return $sheetData;
     } catch (Exception $e) {
       if (403 == $e->getCode()) {
         // Hit rate limit
@@ -223,7 +235,8 @@ class GoogleApiBroker {
         printBasicMessage(
           'GCAL DEL: "' .
           $event->getSummary() . '"' .
-          $title
+          $title .
+          ' updated: ' . $event->getUpdated()
         );
         $this->calendarService->events->delete(
           $googleCalendarId, $event->getId()
