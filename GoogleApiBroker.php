@@ -214,10 +214,16 @@ class GoogleApiBroker {
         $this->calendarService->getClient()->getClientId(),
         $creator->getId())
       ) {
+        $source = $event->getSource();
+        if (!is_null($source)) {
+          $title = 'source->title: ' . $source->getTitle();
+        } else {
+          $title = 'source->title: unknown';
+        }
         printBasicMessage(
           'GCAL DEL: "' .
           $event->getSummary() . '"' .
-          $event->getSource()->getTitle()
+          $title
         );
         $this->calendarService->events->delete(
           $googleCalendarId, $event->getId()
