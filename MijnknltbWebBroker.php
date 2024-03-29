@@ -92,7 +92,7 @@ class MijnknltbWebBroker {
 
   private function acceptCookieWall($playerProfileId) {
     $url = self::URL_COOKIEWALL_SAVE;
-    $payload = array('ReturnUrl' => '/player-profile/' . $playerProfileId);
+    $payload = array('returnurl' => '/player-profile/' . $playerProfileId);
     $this->makeHttpRequest($url, true, $payload);
   }
 
